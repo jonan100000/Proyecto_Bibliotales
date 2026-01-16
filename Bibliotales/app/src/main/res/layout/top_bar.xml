@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:padding="8dp">
+
+    <!-- Logo -->
+    <ImageView
+        android:id="@+id/appLogo"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/bibliotales"
+        android:contentDescription="Logo"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- Título -->
+    <TextView
+        android:id="@+id/appTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="BIBLIOTALES"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@id/appLogo"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginStart="12dp" />
+
+    <!-- Icono menú de navegación general -->
+    <ImageView
+        android:id="@+id/navMenuButton"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@drawable/menuprincipal"
+        android:contentDescription="Menú navegación"
+        app:tint="@android:color/white"
+        app:layout_constraintEnd_toStartOf="@id/userMenuButton"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="16dp" />
+
+    <!-- Icono menú de usuario -->
+    <ImageView
+        android:id="@+id/userMenuButton"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@drawable/perfil"
+        android:contentDescription="Menú usuario"
+        app:tint="@android:color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,20 @@
+{
+  "marketplace": [
+    {
+      "id_item": 1,
+      "nombre_item": "Backgroun exclusivo azul",
+      "descripcion": "Background para la foto de perfil",
+      "costo_puntos": 500,
+      "tipo_item": "background",
+      "id_usuario": 1
+    },
+    {
+      "id_item": 2,
+      "nombre_item": "Marco exclusivo rojo",
+      "descripcion": "Marco para la foto de perfil",
+      "costo_puntos": 500,
+      "tipo_item": "marco",
+      "id_usuario": 1
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand Colors -->
+    <!-- <color name="brand_primary">#4A7BC2</color> -->
+    <color name="brand_primary_dark">#FFCE4800</color>
+
+    <!-- Backgrounds -->
+   <!-- <color name="background_light">#FFE5CC</color> -->
+    <color name="background_dark">#212121</color>
+
+
+    <!-- Text Colors -->
+    <!-- <color name="text_primary_light">#2C2C2C</color> -->
+    <color name="text_primary_dark">#FFFFFF</color>
+
+    <!-- Surface Colors -->
+    <color name="surface_dark">#2C2C2C</color>
+
+
+
+
+    <!-- Error -->
+    <color name="error">#D32F2F</color>
+
+    <!-- Colores adicionales para la app -->
+    <color name="card_background_dark">#303030</color>
+    <color name="border_color">#FFCE4800</color>
+    <color name="accent_color">#FFCE4800</color>
+
+    <!-- Marketplace item colors -->
+    <color name="marco_rojo">#FF0000</color>
+    <color name="background_azul">#2196F3</color>
+    <color name="background_default">#424242</color>
+    <color name="marco_azul">#2196F3</color>
+    <color name="marco_verde">#4CAF50</color>
+    <color name="background_gris_oscuro">#424242</color>
+    <color name="background_gris_claro">#616161</color>
+    <color name="background_naranja">#FF9800</color>
+    <color name="marco_naranja">#FF9800</color>
+    <color name="background_verde">#4CAF50</color>
+    <color name="background_morado">#9C27B0</color>
+</resources>

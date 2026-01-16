@@ -1,0 +1,67 @@
+{
+  "mensajes_foro": [
+    {
+      "id_mensaje": 1,
+      "contenido": "¿Alguien ha leído ya este volumen?",
+      "fecha_mensaje_foro": "2024-05-13",
+      "id_usuario": 1,
+      "id_mensaje_padre": null,
+      "titulo": "Opiniones sobre Rebuild World",
+      "id_libro": 1
+    },
+    {
+      "id_mensaje": 2,
+      "contenido": "Sí, lo acabo de terminar y me encantó.",
+      "fecha_mensaje_foro": "2024-05-14",
+      "id_usuario": 1,
+      "id_mensaje_padre": 1,
+      "titulo": null,
+      "id_libro": 1
+    },
+    {
+      "id_mensaje": 3,
+      "contenido": "La parte de la batalla final fue increíble.",
+      "fecha_mensaje_foro": "2024-05-15",
+      "id_usuario": 1,
+      "id_mensaje_padre": 2,
+      "titulo": null,
+      "id_libro": 1
+    },
+    {
+      "id_mensaje": 4,
+      "contenido": "¿Alguien sabe cuándo sale el próximo volumen?",
+      "fecha_mensaje_foro": "2024-05-16",
+      "id_usuario": 1,
+      "id_mensaje_padre": null,
+      "titulo": "Próximo volumen",
+      "id_libro": 1
+    },
+    {
+      "id_mensaje": 5,
+      "contenido": "Me gustó mucho el desarrollo del personaje principal.",
+      "fecha_mensaje_foro": "2024-05-17",
+      "id_usuario": 1,
+      "id_mensaje_padre": null,
+      "titulo": "Desarrollo de personajes",
+      "id_libro": 1
+    },
+    {
+      "id_mensaje": 6,
+      "contenido": "El segundo volumen también está genial.",
+      "fecha_mensaje_foro": "2024-05-18",
+      "id_usuario": 1,
+      "id_mensaje_padre": null,
+      "titulo": "Volumen 2",
+      "id_libro": 2
+    },
+    {
+      "id_mensaje": 7,
+      "contenido": "Estoy esperando con ansias el volumen 3.",
+      "fecha_mensaje_foro": "2024-05-19",
+      "id_usuario": 1,
+      "id_mensaje_padre": 6,
+      "titulo": null,
+      "id_libro": 2
+    }
+  ]
+}

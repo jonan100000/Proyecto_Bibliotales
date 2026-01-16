@@ -1,0 +1,16 @@
+{
+  "compras_item": [
+    {
+      "id_compra": 1,
+      "id_usuario": 1,
+      "id_item": 1,
+      "fecha_item_compra": "2024-05-11"
+    },
+    {
+      "id_compra": 2,
+      "id_usuario": 1,
+      "id_item": 2,
+      "fecha_item_compra": "2024-05-11"
+    }
+  ]
+}

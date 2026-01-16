@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tamaños para items seleccionables -->
+    <dimen name="item_size">80dp</dimen>
+    <dimen name="item_margin">8dp</dimen>
+</resources>

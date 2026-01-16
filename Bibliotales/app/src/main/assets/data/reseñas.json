@@ -1,0 +1,12 @@
+{
+  "reseñas": [
+    {
+      "id_resenia": 1,
+      "puntuacion_resena": 5,
+      "comentario_resena": "Excelente libro, muy recomendado",
+      "fecha_resena": "2024-05-15",
+      "id_libro": 1,
+      "id_usuario": 1
+    }
+  ]
+}

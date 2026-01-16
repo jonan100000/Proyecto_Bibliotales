@@ -1,0 +1,12 @@
+{
+  "tipos_libro": [
+    {
+      "id_tipo": 1,
+      "nombre_tipo": "Novela"
+    },
+    {
+      "id_tipo": 2,
+      "nombre_tipo": "Manga"
+    }
+  ]
+}

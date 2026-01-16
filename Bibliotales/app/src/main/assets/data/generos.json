@@ -1,0 +1,12 @@
+{
+  "generos": [
+    {
+      "id_genero": 1,
+      "nombre_genero": "Ciencia Ficción"
+    },
+    {
+      "id_genero": 2,
+      "nombre_genero": "Fantasía"
+    }
+  ]
+}

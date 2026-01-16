@@ -1,0 +1,22 @@
+{
+  "compras_libro": [
+    {
+      "id_compra": 1,
+      "id_usuario": 1,
+      "id_libro": 1,
+      "fecha_libro_compra": "2024-05-10"
+    },
+    {
+      "id_compra": 2,
+      "id_usuario": 1,
+      "id_libro": 2,
+      "fecha_libro_compra": "2024-05-12"
+    },
+    {
+      "id_compra": 3,
+      "id_usuario": 1,
+      "id_libro": 3,
+      "fecha_libro_compra": "2024-05-12"
+    }
+  ]
+}

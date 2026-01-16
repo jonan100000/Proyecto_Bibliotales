@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_perfil_usuario"
+        android:title="Perfil de Usuario" />
+
+    <item
+        android:id="@+id/menu_biblioteca"
+        android:title="Biblioteca" />
+
+    <item
+        android:id="@+id/menu_cerrar_sesion"
+        android:title="Cerrar Sesión" />
+</menu>

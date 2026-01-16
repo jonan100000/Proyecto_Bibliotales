@@ -1,0 +1,26 @@
+# --------------------------------------
+# Android Studio
+# --------------------------------------
+
+# Gradle build folders
+/Bibliotales/.gradle/
+/Bibliotales/build/
+/Bibliotales/app/build/
+
+# Local configuration file (SDK paths, local settings)
+local.properties
+
+# IDE files
+/.idea/
+/Bibliotales/*.iml
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Optional: JetBrains caches
+/.idea/caches/
+/.idea/libraries/

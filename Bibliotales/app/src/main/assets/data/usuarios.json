@@ -1,0 +1,14 @@
+{
+  "usuarios": [
+    {
+      "id_usuario": 1,
+      "nombre_usuario": "admin",
+      "correo": "admin@bibliotales.com",
+      "contraseña": "1",
+      "tipo_usuario": "A",
+      "puntos": 1000,
+      "fecha_registro": "2024-01-01",
+      "fecha_nacimiento": "1990-01-01"
+    }
+  ]
+}
