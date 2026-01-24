@@ -13,6 +13,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import javafx.animation.KeyValue;
 import javafx.animation.KeyValue.Type;
+import static jdk.nashorn.internal.objects.NativeFunction.call;
 import pojospi.ExcepcionPI;
 import pojospi.Compra_Item;
 import pojospi.Compra_Libro;
@@ -46,7 +47,7 @@ public class CADPI {
     
     private void conectarBD() throws ExcepcionPI {
         try {
-        conexion = DriverManager.getConnection("jdbc:oracle:thin:@172.16.202.1:1521:test", "bibliotales", "kk");
+        conexion = DriverManager.getConnection("jdbc:oracle:thin:@192.168.1.141:1521:test", "bibliotales", "kk");
         }   catch (SQLException ex) {
             ExcepcionPI e = new ExcepcionPI();
              e.setCodigoErrorBD(ex.getErrorCode());
@@ -221,7 +222,256 @@ public class CADPI {
 }
     
     
+  
+        /**
+     * Añade un registro a la tabla Libros
+     * @param usuario 
+     * @return Cantidad de registros añadidos
+     * @throws pojospi.ExcepcionPI Se lanzará cuando se produzca un error de base de datos
+     * @author Jon Ander Elvira
+     * @version 1.0
+     * @since AaD 1.0
+    */
+   public Integer insertarUsuario(Usuario usuario) throws ExcepcionPI {
+    conectarBD();
+    int registrosAfectados = 0;
+
+    String dml = "INSERT INTO usuario " +
+                 "(id_usuario, nombre_usuario, correo, contrasena, tipo_usuario, puntos, fecha_registro, fecha_nacimiento) " +
+                 "VALUES (USUARIO_SEQ.nextval, ?, ?, ?, ?, ?, ?, ?)";
+
+    try {
+        PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
+
+        sentenciaPreparada.setString(1, usuario.getNombre_usuario());
+        sentenciaPreparada.setString(2, usuario.getCorreo());
+        sentenciaPreparada.setString(3, usuario.getContrasena());
+        sentenciaPreparada.setString(4, usuario.getTipoUsuario());
+        sentenciaPreparada.setInt(5, usuario.getPuntos());
+        sentenciaPreparada.setDate(6, new java.sql.Date(usuario.getFechaRegistro().getTime()));
+        sentenciaPreparada.setDate(7, new java.sql.Date(usuario.getFechaNacimiento().getTime()));
+
+        registrosAfectados = sentenciaPreparada.executeUpdate();
+
+        sentenciaPreparada.close();
+        conexion.close();
+
+        return registrosAfectados;
+
+    } catch (SQLException ex) {
+        ExcepcionPI e = new ExcepcionPI();
+        e.setCodigoErrorBD(ex.getErrorCode());
+        e.setMensajeErrorBD(ex.getMessage());
+        e.setSentenciaSQL(dml);
+
+        switch (ex.getErrorCode()) {
+            case 1: // ORA-00001 unique constraint
+                e.setMensajeErrorUsuario("El nombre de usuario o el correo ya existen.");
+                break;
+            case 1400: // NOT NULL
+                e.setMensajeErrorUsuario("Todo deben estar completos.");
+                break;
+            case 2290: // CHECK constraint
+                e.setMensajeErrorUsuario("Los puntos deben ser mayores a 0 y el tipo de usuario debe ser 0 o 1.");
+                break;
+            default:
+                e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador.");
+        }
+
+        throw e;
+    }
+   }
+    
+ 
+    /**
+     * Modificar un registro en la tabla usuarios.
+     * @param id_usuario
+     * @param usuario
+     * @return Cantidad de registros modificados
+     * @throws pojospi.ExcepcionPI Se lanzará cuando se produzca un error de base de datos
+     * @author Jon Ander Elvira
+     * @version 1.0
+     * @since AaD 1.0
+    */
+    public Integer modificarUsuario(Integer id_usuario, Usuario usuario) throws ExcepcionPI {
+    conectarBD();
+    int registrosAfectados = 0;
+
+    String sql = "call actualizar_usuario(?, ?, ?, ?, ?, ?) ";
+
+    try {
+
+        PreparedStatement sentenciaPreparada = conexion.prepareStatement(sql);
+
+        sentenciaPreparada.setInt(1, id_usuario);
+        sentenciaPreparada.setString(2, usuario.getNombre_usuario());
+        sentenciaPreparada.setString(3, usuario.getContrasena());
+        sentenciaPreparada.setString(4, usuario.getTipoUsuario());
+        sentenciaPreparada.setInt(5, usuario.getPuntos());
+        sentenciaPreparada.setDate(6, new java.sql.Date(usuario.getFechaNacimiento().getTime()));
+      
+
+        registrosAfectados = sentenciaPreparada.executeUpdate();
+
+        sentenciaPreparada.close();
+        conexion.close();
+
+    } catch (SQLException ex) {
+
+        ExcepcionPI e = new ExcepcionPI();
+
+        switch (ex.getErrorCode()) {
+            case 1: // ORA-00001
+                e.setMensajeErrorUsuario("El nombre de usuario o el correo ya existen.");
+                break;
+            case 1407: // NOT NULL
+                e.setMensajeErrorUsuario("Ningún campo puede estar vacíos.");
+                break;
+            case 2290: // CHECK constraint
+                e.setMensajeErrorUsuario("Algún valor no cumple las restricciones establecidas.");
+                break;
+            default:
+                e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador.");
+                break;
+        }
+
+        e.setCodigoErrorBD(ex.getErrorCode());
+        e.setMensajeErrorBD(ex.getMessage());
+        e.setSentenciaSQL(sql);
+
+        throw e;
+    }
+
+    return registrosAfectados;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+      /**
+     * Lee un registro de la tabla marketplace
+     * @return Registro leído
+     * @throws pojospi.ExcepcionPI Se lanzará cuando se produzca un error de base de datos
+     * @author Victor Torrens
+     * @version 1.0
+     * @since AaD 1.0
+    */
+    public Marketplace leerItemMarketplace(int idItem) throws ExcepcionPI {
+    conectarBD();
+    Marketplace m = null;
+
+    String dql = "SELECT m.*, u.* FROM marketplace m, usuario u "
+               + "WHERE m.id_usuario = u.id_usuario AND m.id_item = ?";
+
+    try {
+        PreparedStatement ps = conexion.prepareStatement(dql);
+        ps.setInt(1, idItem);
+        ResultSet rs = ps.executeQuery();
+
+        if (rs.next()) {
+            m = new Marketplace();
+            Usuario u = new Usuario();
+
+            m.setId_item(rs.getInt("ID_ITEM"));
+            m.setNombre_item(rs.getString("NOMBRE_ITEM"));
+            m.setDescripcion(rs.getString("DESCRIPCION"));
+            m.setCosto_puntos(rs.getInt("COSTO_PUNTOS"));
+            m.setTipo_item(rs.getString("TIPO_ITEM"));
+
+            u.setId_usuario(rs.getInt("ID_USUARIO"));
+            u.setNombre_usuario(rs.getString("NOMBRE_USUARIO"));
+            u.setCorreo(rs.getString("CORREO"));
+
+            m.setUsuario(u);
+        }
+
+        rs.close();
+        ps.close();
+        conexion.close();
+
+    } catch (SQLException ex) {
+        ExcepcionPI e = new ExcepcionPI();
+        e.setCodigoErrorBD(ex.getErrorCode());
+        e.setMensajeErrorBD(ex.getMessage());
+        e.setSentenciaSQL(dql);
+        e.setMensajeErrorUsuario("Error general del sistema, consulte con el administrador");
+        throw e;
+    }
+    return m;
+}
+    
+    
+    
+    
+    
+    
+    
+       /**
+     * Lee todas los registros de la tabla marketplace
+     * @return Cantidad de registros leídos
+     * @throws pojospi.ExcepcionPI Se lanzará cuando se produzca un error de base de datos
+     * @author Victor Torrens
+     * @version 1.0
+     * @since AaD 1.0
+    */
+    public ArrayList<Marketplace> leerItemsMarketplace() throws ExcepcionPI {
+    conectarBD();
+    ArrayList<Marketplace> lista = new ArrayList<>();
+    String dql = "SELECT m.*, u.* FROM marketplace m, usuario u "
+               + "WHERE m.id_usuario = u.id_usuario";
+
+    try {
+        Statement sentencia = conexion.createStatement();
+        ResultSet resultado = sentencia.executeQuery(dql);
+
+        while (resultado.next()) {
+            Marketplace m = new Marketplace();
+            Usuario u = new Usuario();
+
+            m.setId_item(resultado.getInt("ID_ITEM"));
+            m.setNombre_item(resultado.getString("NOMBRE_ITEM"));
+            m.setDescripcion(resultado.getString("DESCRIPCION"));
+            m.setCosto_puntos(resultado.getInt("COSTO_PUNTOS"));
+            m.setTipo_item(resultado.getString("TIPO_ITEM"));
+
+            u = new Usuario();
+            u.setId_usuario(resultado.getInt("ID_USUARIO"));
+            u.setNombre_usuario(resultado.getString("NOMBRE_USUARIO"));
+            u.setCorreo(resultado.getString("CORREO"));
+            u.setContrasena(resultado.getString("CONTRASENA"));
+            u.setTipoUsuario(resultado.getString("TIPO_USUARIO"));
+            u.setPuntos(resultado.getInt("PUNTOS"));
+            u.setFechaRegistro(resultado.getDate("FECHA_REGISTRO"));
+            u.setFechaNacimiento(resultado.getDate("FECHA_NACIMIENTO"));
+
+            m.setUsuario(u);
+            lista.add(m);
+        }
+
+        resultado.close();
+        sentencia.close();
+        conexion.close();
+
+    } catch (SQLException ex) {
+        ExcepcionPI e = new ExcepcionPI();
+        e.setCodigoErrorBD(ex.getErrorCode());
+        e.setMensajeErrorBD(ex.getMessage());
+        e.setSentenciaSQL(dql);
+        e.setMensajeErrorUsuario("Error general del sistema, consulte con el administrador");
+        throw e;
+    }
+    return lista;
+    }
+    
+}
+    
+    
     
    
     
-}
+
+
