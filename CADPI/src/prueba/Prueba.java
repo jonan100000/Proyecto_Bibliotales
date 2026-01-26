@@ -32,7 +32,26 @@ public class  Prueba {
         java.util.Date fechaConvertida2 = formato.parse(fechaNacimiento); // Requiere manejar excepciones
 
 
+        
 // -----------------------------------------------------------------------------------------------------------------
+// Para el modificarLibros (Oscar)
+//Libro lMod = new Libro();
+//lMod.setTitulo("Título Actualizado");
+//lMod.setDescripcion("Nueva descripción del libro");
+//lMod.setFechaPublicacion(fechaConvertida2); 
+//lMod.setUrlArchivo("http://biblioteca.com/archivo_modificado.pdf");
+//lMod.setCostoDinero(new BigDecimal(19.99)); 
+//lMod.setPortada("portada_nueva.jpg");
+//
+//TipoLibro tipo = new TipoLibro();
+//tipo.setIdTipo(3);
+//
+//lMod.setTipoLibro(tipo);
+
+
+
+// -----------------------------------------------------------------------------------------------------------------
+// Para el insertarLibro (Oscar)
 //        Libro l = new Libro();
 //        l.setTitulo("Holaghthtg");
 //        l.setDescripcion("Detgbrscripción anónima");
@@ -59,11 +78,11 @@ public class  Prueba {
 // Para el insertUsuarios (Jon Ander)
 // ===== INSERTAR =====
 //            Usuario u = new Usuario();
-//            u.setNombre_usuario("usuarioo_test");
-//            u.setCorreo("usuarioo_test@mail.com");
-//            u.setContrasena("3");
-//            u.setTipoUsuario("R");
-//            u.setPuntos(10);
+//            u.setNombre_usuario("usuari3reoo_test");
+//            u.setCorreo("usuarioero_test@mail.com");
+//            u.setContrasena("4");
+//            u.setTipoUsuario("A");
+//            u.setPuntos(11);
 //            u.setFechaRegistro(fechaConvertida);
 //            u.setFechaNacimiento(fechaConvertida2);
         
@@ -82,17 +101,31 @@ public class  Prueba {
 
 
 
+// -----------------------------------------------------------------------------------------------------------------
+// Para el insertarTipoLibro (Santiago)
+//TipoLibro tl = new TipoLibro();
+//tl.setNombreTipo("Psicológicondo");
+
+
+
+
         try {
             
         cad = new CADPI();
-//      System.out.println(cad.leerLibros());   // El de LeerLibros
-//      registrosAfectados = cad.eliminarLibro("15");    // El de EliminarLibros
-//      registrosAfectados = cad.insertarLibro(l);
-//      registrosAfectados = cad.insertarUsuario(u);
-//      registrosAfectados = cad.modificarUsuario(3, uMod);
-//      System.out.println(cad.leerItemsMarketplace());
-//      System.out.println(cad.leerItemMarketplace(1));
-         
+//      System.out.println(cad.leerLibro(1));    //El de LeerLibro(Oscar)
+//      System.out.println(cad.leerLibros());    //El de LeerLibros (Oscar)
+//      registrosAfectados = cad.eliminarLibro("15");   //El de EliminarLibros (Oscar)
+//      registrosAfectados= cad.modificarLibro(16, lMod);    //El de ModificarLibro(Oscar)
+//      registrosAfectados = cad.insertarLibro(l);    //El de insertarLibro(Oscar)   
+//      registrosAfectados = cad.insertarUsuario(u);    //El de insertarUsuario(Jon Ander)
+//      registrosAfectados = cad.modificarUsuario(3, uMod);   //El de modificarUsuario(Jon Ander)
+//      System.out.println(cad.leerItemsMarketplace());   //El de LeerItemsMarketplace (Victor)
+//      System.out.println(cad.leerItemMarketplace(1));   //El de LeerItemMarketplace (Victor)
+//      System.out.println(cad.leerTipoLibro(2));     //El de leerTipoLibro(Santiago)
+//      System.out.println(cad.leerTiposLibro());     //El de leerTiposLibro (Santiago)
+//      System.out.println(cad.insertarTipoLibro(tl));     //El de InsertarTipoLibro (Santiago)
+//      System.out.println(cad.eliminarTipoLibro(8));     //El de eliminarTipoLibro (Santiago)
+       
             
             
         System.out.println("Registros eliminados/creados: " + registrosAfectados);

@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 package cadpi;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -57,7 +58,75 @@ public class CADPI {
         }
     }
     
-     
+    
+ // =========================================================SCRIPTS DE OSCAR============================================================================================
+    
+     /**
+     * Lee un registro de la tabla Libro
+     * @return Registro leído
+     * @throws pojospi.ExcepcionPI Se lanzará cuando se produzca un error de base de datos
+     * @author Óscar Eduardo Arango Torres
+     * @version 1.0
+     * @since AaD 1.0
+    */
+    public Libro leerLibro(int idLibro) throws ExcepcionPI {
+    conectarBD();
+    Libro l = null;
+
+    String dql = "SELECT l.*, u.*, t.* " +
+                 "FROM libro l, usuario u, tipo_libro t " +
+                 "WHERE l.id_usuario = u.id_usuario " +
+                 "AND l.id_tipo = t.id_tipo " +
+                 "AND l.id_libro = " + idLibro;
+    try {
+        Statement sentencia = conexion.createStatement();
+        ResultSet rs = sentencia.executeQuery(dql);
+        if (rs.next()) {
+            l = new Libro();
+            l.setId_libro(rs.getInt("ID_LIBRO"));
+            l.setTitulo(rs.getString("TITULO"));
+            l.setDescripcion(rs.getString("DESCRIPCION"));
+            l.setUrlArchivo(rs.getString("URL_ARCHIVO"));
+            l.setCostoDinero(rs.getBigDecimal("COSTO_DINERO")); 
+            l.setPortada(rs.getString("PORTADA"));
+
+          
+            Usuario u = new Usuario();
+            u.setId_usuario(rs.getInt("ID_USUARIO"));
+            u.setNombre_usuario(rs.getString("NOMBRE_USUARIO"));
+            u.setCorreo(rs.getString("CORREO"));
+            u.setContrasena(rs.getString("CONTRASENA"));
+            u.setTipoUsuario(rs.getString("TIPO_USUARIO"));
+            u.setPuntos(rs.getInt("PUNTOS"));
+            u.setFechaRegistro(rs.getDate("FECHA_REGISTRO"));
+            u.setFechaNacimiento(rs.getDate("FECHA_NACIMIENTO"));
+            l.setUsuario(u);
+
+            
+            TipoLibro tl = new TipoLibro();
+            tl.setIdTipo(rs.getInt("ID_TIPO"));
+            tl.setNombreTipo(rs.getString("NOMBRE_TIPO"));
+            l.setTipoLibro(tl);
+        }
+        rs.close();
+        sentencia.close();
+        conexion.close();
+
+    } catch (SQLException ex) {
+        ExcepcionPI e = new ExcepcionPI();
+        e.setCodigoErrorBD(ex.getErrorCode());
+        e.setMensajeErrorBD(ex.getMessage());
+        e.setSentenciaSQL(dql);
+        e.setMensajeErrorUsuario("Error al intentar leer el libro con ID: " + idLibro);
+        throw e;
+    }
+    return l;
+}
+    
+    
+    
+    
+    
      /**
      * Lee todas los registros de la tabla Libros
      * @return Cantidad de registros leídos
@@ -125,6 +194,8 @@ public class CADPI {
         }
     
     
+    
+    
     /**
      * Elimina un único registro de la tabla Libros
      * @param jobId Identificador de libro del registro que se desea eliminar
@@ -163,9 +234,72 @@ public class CADPI {
         }
     
     
+  
+ /**
+ * Modificar un registro en la tabla libro.
+ * @param id_libro Identificador del libro a modificar
+ * @param libro con los nuevos datos
+ * @return Cantidad de registros modificados
+ * @throws pojospi.ExcepcionPI Se lanzará cuando se produzca un error de base de datos
+ */
+public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI {
+    conectarBD();
+    int registrosAfectados = 0;
+
+    String sql = "call actualizar_libro(?, ?, ?, ?, ?, ?, ?, ?)"; 
+
+    try {
+        CallableStatement sentencia = conexion.prepareCall(sql);
+
+        
+        sentencia.setInt(1, id_libro);
+        sentencia.setString(2, libro.getTitulo());
+        sentencia.setString(3, libro.getDescripcion());
+        sentencia.setDate(4, new java.sql.Date(libro.getFechaPublicacion().getTime()));
+        sentencia.setString(5, libro.getUrlArchivo());
+        sentencia.setInt(6, libro.getTipoLibro().getIdTipo()); 
+        sentencia.setBigDecimal(7, libro.getCostoDinero());
+        sentencia.setString(8, libro.getPortada());
+
+        registrosAfectados = sentencia.executeUpdate();
+        sentencia.close();
+        conexion.close();
+
+    } catch (SQLException ex) {
+        ExcepcionPI e = new ExcepcionPI();
+
+        switch (ex.getErrorCode()) {
+            case 1: 
+                e.setMensajeErrorUsuario("El título o la URL del archivo ya existen.");
+                break;
+            case 1407: 
+                e.setMensajeErrorUsuario("El título, fecha_publicación, url, tipo de libro y costo del libro son obligatorios.");
+                break;
+            case 2290: 
+                e.setMensajeErrorUsuario("El costo del libro debe ser mayor a 0 y el titulo del libro debe tener mínimo de 2 letras");
+                break;
+            case 2291: 
+                e.setMensajeErrorUsuario("El tipo de libro especificado no existe.");
+                break;
+            default:
+                e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador.");
+                break;
+        }
+
+        e.setCodigoErrorBD(ex.getErrorCode());
+        e.setMensajeErrorBD(ex.getMessage());
+        e.setSentenciaSQL(sql);
+
+        throw e;
+    }
+
+    return registrosAfectados;
+}   
     
-    /**
-     * Añade un registro a la tabla Libros
+ 
+
+/**
+     * Añade un registro a la tabla Libro
      * @param libro 
      * @return Cantidad de registros añadidos
      * @throws pojospi.ExcepcionPI Se lanzará cuando se produzca un error de base de datos
@@ -222,9 +356,37 @@ public class CADPI {
 }
     
     
-  
-        /**
-     * Añade un registro a la tabla Libros
+ 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+   
+    
+    
+    
+    
+    
+    
+    
+    
+  // =========================================================SCRIPTS DE Jon Ander======================================================================================= 
+    
+  /**
+     * Añade un registro a la tabla Usuario
      * @param usuario 
      * @return Cantidad de registros añadidos
      * @throws pojospi.ExcepcionPI Se lanzará cuando se produzca un error de base de datos
@@ -283,8 +445,10 @@ public class CADPI {
    }
     
  
-    /**
-     * Modificar un registro en la tabla usuarios.
+   
+   
+  /**
+     * Modificar un registro en la tabla usuario
      * @param id_usuario
      * @param usuario
      * @return Cantidad de registros modificados
@@ -301,7 +465,7 @@ public class CADPI {
 
     try {
 
-        PreparedStatement sentenciaPreparada = conexion.prepareStatement(sql);
+        CallableStatement sentenciaPreparada = conexion.prepareCall(sql);
 
         sentenciaPreparada.setInt(1, id_usuario);
         sentenciaPreparada.setString(2, usuario.getNombre_usuario());
@@ -350,7 +514,30 @@ public class CADPI {
     
     
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
+    
+    
+    
+    
+    
+ // =========================================================SCRIPTS DE VICTOR============================================================================================    
     
       /**
      * Lee un registro de la tabla marketplace
@@ -363,19 +550,18 @@ public class CADPI {
     public Marketplace leerItemMarketplace(int idItem) throws ExcepcionPI {
     conectarBD();
     Marketplace m = null;
+    Usuario u = new Usuario();
 
-    String dql = "SELECT m.*, u.* FROM marketplace m, usuario u "
-               + "WHERE m.id_usuario = u.id_usuario AND m.id_item = ?";
+    String dql = "SELECT m.*, u.* "
+               + "FROM marketplace m, usuario u "
+               + "WHERE m.id_usuario = u.id_usuario AND m.id_item = " + idItem;
 
     try {
-        PreparedStatement ps = conexion.prepareStatement(dql);
-        ps.setInt(1, idItem);
-        ResultSet rs = ps.executeQuery();
+        Statement sentencia = conexion.createStatement();
+        ResultSet rs = sentencia.executeQuery(dql);
 
         if (rs.next()) {
             m = new Marketplace();
-            Usuario u = new Usuario();
-
             m.setId_item(rs.getInt("ID_ITEM"));
             m.setNombre_item(rs.getString("NOMBRE_ITEM"));
             m.setDescripcion(rs.getString("DESCRIPCION"));
@@ -385,12 +571,18 @@ public class CADPI {
             u.setId_usuario(rs.getInt("ID_USUARIO"));
             u.setNombre_usuario(rs.getString("NOMBRE_USUARIO"));
             u.setCorreo(rs.getString("CORREO"));
+            u.setCorreo(rs.getString("CORREO"));
+            u.setContrasena(rs.getString("CONTRASENA"));
+            u.setTipoUsuario(rs.getString("TIPO_USUARIO"));
+            u.setPuntos(rs.getInt("PUNTOS"));
+            u.setFechaRegistro(rs.getDate("FECHA_REGISTRO"));
+            u.setFechaNacimiento(rs.getDate("FECHA_NACIMIENTO"));
 
             m.setUsuario(u);
         }
 
         rs.close();
-        ps.close();
+        sentencia.close();
         conexion.close();
 
     } catch (SQLException ex) {
@@ -403,6 +595,7 @@ public class CADPI {
     }
     return m;
 }
+    
     
     
     
@@ -467,11 +660,229 @@ public class CADPI {
     return lista;
     }
     
-}
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ // =========================================================SCRIPTS DE SANTIAGO============================================================================================
     
+       /**
+     * Lee un registro de la tabla tipoLibro
+     * @return Registro leído
+     * @throws pojospi.ExcepcionPI Se lanzará cuando se produzca un error de base de datos
+     * @author Santiago Quiceno
+     * @version 1.0
+     * @since AaD 1.0
+    */ 
+  public TipoLibro leerTipoLibro(int id_tipo) throws ExcepcionPI {
+    conectarBD();
+    TipoLibro tipo = null;
     
+    String dql = "SELECT tl.* FROM tipo_libro tl WHERE id_tipo = " + id_tipo;
     
+    try {
+        Statement sentencia = conexion.createStatement();
+
+        
+        ResultSet resultado = sentencia.executeQuery(dql);
+        
+        if (resultado.next()) {
+            tipo = new TipoLibro();
+            tipo.setIdTipo(resultado.getInt("id_tipo"));
+            tipo.setNombreTipo(resultado.getString("nombre_tipo"));
+        }
+        
+        resultado.close();
+        sentencia.close();
+        conexion.close();
+        
+    } catch (SQLException ex) {
+        ExcepcionPI e = new ExcepcionPI();
+        e.setCodigoErrorBD(ex.getErrorCode());
+        e.setMensajeErrorBD(ex.getMessage());
+        e.setSentenciaSQL(dql);
+        e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+        throw e;
+    }
+    
+    return tipo;
+} 
+  
+  
+  
    
+     /**
+     * Lee todas los registros de la tabla tipoLibro
+     * @return Cantidad de registros leídos
+     * @throws pojospi.ExcepcionPI Se lanzará cuando se produzca un error de base de datos
+     * @author Santiago Quiceno
+     * @version 1.0
+     * @since AaD 1.0
+    */
+  public ArrayList<TipoLibro> leerTiposLibro() throws ExcepcionPI {
+    conectarBD();
+    ArrayList<TipoLibro> listaTipos = new ArrayList<>();
+    TipoLibro t;
+    
+    String dql = "SELECT tl.* FROM tipo_libro ORDER BY id_tipo";
+    
+    try {
+        Statement sentencia = conexion.createStatement();
+        ResultSet resultado = sentencia.executeQuery(dql);
+        
+        while (resultado.next()) {
+            t = new TipoLibro();
+            t.setIdTipo(resultado.getInt("id_tipo"));
+            t.setNombreTipo(resultado.getString("nombre_tipo"));
+            listaTipos.add(t);
+        }
+        
+        resultado.close();
+        sentencia.close();
+        conexion.close();
+        
+    } catch (SQLException ex) {
+        ExcepcionPI e = new ExcepcionPI();
+        e.setCodigoErrorBD(ex.getErrorCode());
+        e.setMensajeErrorBD(ex.getMessage());
+        e.setSentenciaSQL(dql);
+        e.setMensajeErrorUsuario("Error general del sistema, consulte con el administrador");
+        throw e;
+    }
+    
+    return listaTipos;
+}
+  
+  
+  
+  
+  /**
+     * Añade un registro a la tabla Libro
+     * @param tipoLibro 
+     * @return Cantidad de registros añadidos
+     * @throws pojospi.ExcepcionPI Se lanzará cuando se produzca un error de base de datos
+     * @author Santiago Quiceno
+     * @version 1.0
+     * @since AaD 1.0
+    */
+  public int insertarTipoLibro(TipoLibro tipoLibro) throws ExcepcionPI {
+    conectarBD();
+    int registrosAfectados = 0;
+    
+    String dml = "INSERT INTO tipo_libro (id_tipo, nombre_tipo) VALUES (TIPO_LIBRO_SEQ.nextval, ?)";
+    
+    try {
+        PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
+        sentenciaPreparada.setString(1, tipoLibro.getNombreTipo());
+        
+        registrosAfectados = sentenciaPreparada.executeUpdate();
+        
+        sentenciaPreparada.close();
+        conexion.close();
+        
+        return registrosAfectados;
+        
+    } catch (SQLException ex) {
+        ExcepcionPI e = new ExcepcionPI();
+        e.setCodigoErrorBD(ex.getErrorCode());
+        e.setMensajeErrorBD(ex.getMessage());
+        e.setSentenciaSQL(dml);
+        
+        switch (ex.getErrorCode()) {
+            case 1: 
+                e.setMensajeErrorUsuario("Ya existe un tipo de libro con ese nombre.");
+                break;
+            case 1400:
+                e.setMensajeErrorUsuario("El nombre del tipo de libro es obligatorio");
+                break;
+            case 2290: 
+                e.setMensajeErrorUsuario("El nombre debe tener al menos 3 caracteres (sin espacios).");
+                break;
+            default:
+                e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador.");
+        }
+        
+        throw e;
+    }
+}
+  
+  
+  
+  
+    /**
+     * Elimina un único registro de la tabla tipoLibro
+     * @param jobId Identificador de libro del registro que se desea eliminar
+     * @return Cantidad de registros eliminados
+     * @throws pojoshpi.ExcepcionPI Se lanzará cuando se produzca un error de base de datos
+     * @author Santiago Quiceno
+     * @version 1.0
+     * @since AaD 1.0
+    */
+    public int eliminarTipoLibro(int idTipo) throws ExcepcionPI {
+    conectarBD();
+    int registrosAfectados = 0;
+    
+    String dml = "DELETE FROM tipo_libro WHERE id_tipo = " + idTipo;
+    
+    try {
+        Statement sentencia = conexion.createStatement();
+        registrosAfectados = sentencia.executeUpdate(dml);
+        
+        sentencia.close();
+        conexion.close();
+        return registrosAfectados;
+        
+    } catch (SQLException ex) {
+        ExcepcionPI e = new ExcepcionPI();
+        e.setCodigoErrorBD(ex.getErrorCode());
+        e.setMensajeErrorBD(ex.getMessage());
+        e.setSentenciaSQL(dml);
+        
+        switch (ex.getErrorCode()) {
+            case 2292: 
+                e.setMensajeErrorUsuario("El tipo de libro no se puede eliminar. Existen libros asociados a este tipo.");
+                break;
+            case 1403: 
+                    e.setMensajeErrorUsuario("No se encontró el tipo de libro con ID: " + idTipo);
+                break;
+            default:
+                e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador.");
+        }
+        
+        throw e;
+    }
+}
+  
+  
+  
+
+}    
     
 
 
