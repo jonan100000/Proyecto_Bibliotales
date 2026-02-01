@@ -7,10 +7,13 @@ package prueba;
 import cadpi.CADPI;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.time.LocalDateTime;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import pojospi.ExcepcionPI;
 import pojospi.Libro;
+import pojospi.Marketplace;
+import pojospi.MensajeForo;
 import pojospi.TipoLibro;
 import pojospi.Usuario;
 
@@ -78,33 +81,84 @@ public class  Prueba {
 // Para el insertUsuarios (Jon Ander)
 // ===== INSERTAR =====
 //            Usuario u = new Usuario();
-//            u.setNombre_usuario("usuari3reoo_test");
-//            u.setCorreo("usuarioero_test@mail.com");
+//            u.setNombre_usuario("usueoo_test");
+//            u.setCorreo("usuaro_test@mail.com");
 //            u.setContrasena("4");
 //            u.setTipoUsuario("A");
 //            u.setPuntos(11);
 //            u.setFechaRegistro(fechaConvertida);
 //            u.setFechaNacimiento(fechaConvertida2);
+
+
+            
+
         
+
+// -----------------------------------------------------------------------------------------------------------------
+//// Para el modificarUsuarios (Jon Ander)
+//Usuario uMod = new Usuario();
+//uMod.setNombre_usuario("usuario_modificado");
+//uMod.setContrasena("3");
+//uMod.setTipoUsuario("R");
+//uMod.setPuntos(30);
+//uMod.setFechaNacimiento(fechaConvertida2);
+
+
+
+
+
 
 
 
 // -----------------------------------------------------------------------------------------------------------------
-// Para el modificarUsuarios (Jon Ander)
-//Usuario uMod = new Usuario();
-//uMod.setNombre_usuario("usuario_modificado");
-//uMod.setContrasena("1");
-//uMod.setTipoUsuario("A");
-//uMod.setPuntos(50);
-//uMod.setFechaNacimiento(fechaConvertida2);
+// Para el insertarMarketplace (Victor)
+// ===== INSERTAR =====
+//            Marketplace m = new Marketplace();
+//            m.setNombre_item("Botas de cuero de hadas");
+//            m.setDescripcion("Botas bbbbbbb");
+//            m.setCosto_puntos(1070);
+//            m.setTipo_item("E");
+//            
+//            Usuario u= new Usuario();
+//            u.setId_usuario(1);
+//            
+//            m.setUsuario(u);
+         
+
+
+
+// -----------------------------------------------------------------------------------------------------------------
+// Para el modificarMarketplace (Victor)
+// ===== MODIFICAR =====
+//            Marketplace m = new Marketplace();
+//            m.setNombre_item("Calzon");
+//            m.setDescripcion("Botas de nsew");
+//            m.setCosto_puntos(3000);
+//            m.setTipo_item("M");
+
+
 
 
 
 
 // -----------------------------------------------------------------------------------------------------------------
 // Para el insertarTipoLibro (Santiago)
-//TipoLibro tl = new TipoLibro();
-//tl.setNombreTipo("Psicológicondo");
+//      TipoLibro tl = new TipoLibro();
+//      tl.setNombreTipo("Psicológicondo");
+
+
+
+
+
+
+
+
+// -----------------------------------------------------------------------------------------------------------------
+// Para el modificarTipoLibro (Santiago)
+// ===== MODIFICAR ===== 
+//      TipoLibro tl = new TipoLibro();
+//      tl.setNombreTipo("Político");
+            
 
 
 
@@ -112,19 +166,34 @@ public class  Prueba {
         try {
             
         cad = new CADPI();
-//      System.out.println(cad.leerLibro(1));    //El de LeerLibro(Oscar)
+        
 //      System.out.println(cad.leerLibros());    //El de LeerLibros (Oscar)
 //      registrosAfectados = cad.eliminarLibro("15");   //El de EliminarLibros (Oscar)
 //      registrosAfectados= cad.modificarLibro(16, lMod);    //El de ModificarLibro(Oscar)
 //      registrosAfectados = cad.insertarLibro(l);    //El de insertarLibro(Oscar)   
+
+
 //      registrosAfectados = cad.insertarUsuario(u);    //El de insertarUsuario(Jon Ander)
 //      registrosAfectados = cad.modificarUsuario(3, uMod);   //El de modificarUsuario(Jon Ander)
+//        registrosAfectados = cad.eliminarMensajeForo(3);    //El de eliminarMensajeForo (Jon Ander)
+//      System.out.println(cad.leerMensajeForo(2));   //El de leerMensajeForo(Jon Ander)
+
+
+
+
 //      System.out.println(cad.leerItemsMarketplace());   //El de LeerItemsMarketplace (Victor)
-//      System.out.println(cad.leerItemMarketplace(1));   //El de LeerItemMarketplace (Victor)
+//      registrosAfectados = cad.insertarItemMarketplace(m);  //El de InsertarMarketplace(Victor)
+//      registrosAfectados = cad.modificarItemMarketplace(17, m);   //El de ModificarMarketplace(Victor)
+//      registrosAfectados = cad.eliminarItemMarketplace(16);  //El de eliminarMarketplace(Victor)
+
+
+
+
 //      System.out.println(cad.leerTipoLibro(2));     //El de leerTipoLibro(Santiago)
-//      System.out.println(cad.leerTiposLibro());     //El de leerTiposLibro (Santiago)
-//      System.out.println(cad.insertarTipoLibro(tl));     //El de InsertarTipoLibro (Santiago)
-//      System.out.println(cad.eliminarTipoLibro(8));     //El de eliminarTipoLibro (Santiago)
+//      registrosAfectados = cad.insertarTipoLibro(tl);     //El de InsertarTipoLibro (Santiago)
+//      registrosAfectados = cad.modificarTipoLibro(11, tl);   //El de ModificarTipoLibro (Santiago)
+//        registrosAfectados  = cad.eliminarTipoLibro(11);    //El de eliminarTipoLibro (Santiago)
+
        
             
             
