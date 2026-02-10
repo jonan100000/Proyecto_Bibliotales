@@ -5,11 +5,13 @@
  */
 package pojospi;
 
+import java.io.Serializable;
+
 /**
  *
  * @author DosherGG
  */
-public class LibroGenero {
+public class LibroGenero implements Serializable {
     private Libro libro;
     private Genero genero;
 

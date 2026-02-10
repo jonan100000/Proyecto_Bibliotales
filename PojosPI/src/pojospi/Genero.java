@@ -5,11 +5,13 @@
  */
 package pojospi;
 
+import java.io.Serializable;
+
 /**
  *
  * @author DosherGG
  */
-public class Genero {
+public class Genero implements Serializable {
     private Integer id_genero;      
     private String nombre_genero; 
 

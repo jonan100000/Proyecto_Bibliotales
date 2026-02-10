@@ -5,6 +5,7 @@
  */
 package pojospi;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -12,7 +13,7 @@ import java.util.Date;
  *
  * @author DosherGG
  */
-public class Libro {
+public class Libro implements Serializable {
     private Integer id_libro;          
     private String titulo;            
     private String descripcion;      

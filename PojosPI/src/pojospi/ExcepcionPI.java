@@ -5,11 +5,13 @@
  */
 package pojospi;
 
+import java.io.Serializable;
+
 /**
  *
  * @author DosherGG
  */
-public class ExcepcionPI extends Exception {
+public class ExcepcionPI extends Exception implements Serializable {
     private String sentenciaSQL;
     private Integer codigoErrorBD;
     private String mensajeErrorBD;

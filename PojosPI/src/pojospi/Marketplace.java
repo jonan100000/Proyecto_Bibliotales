@@ -5,11 +5,13 @@
  */
 package pojospi;
 
+import java.io.Serializable;
+
 /**
  *
  * @author DosherGG
  */
-public class Marketplace {
+public class Marketplace implements Serializable {
     private Integer id_item;       
     private String nombre_item;    
     private String descripcion;  

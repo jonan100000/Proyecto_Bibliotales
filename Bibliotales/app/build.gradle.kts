@@ -72,6 +72,7 @@ dependencies {
 
     // Herramientas para previsualizar tus Composables en Android Studio
     implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(files("..\\libs\\PojosPI.jar"))
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     //Dependencias base de Android KTX (Kotlin Extensions)

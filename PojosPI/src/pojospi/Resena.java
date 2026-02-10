@@ -5,13 +5,14 @@
  */
 package pojospi;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  *
  * @author DosherGG
  */
-public class Resena {
+public class Resena implements Serializable {
     private Integer id_resena;        
     private Integer puntuacion_resena;      
     private String comentario_resena;       

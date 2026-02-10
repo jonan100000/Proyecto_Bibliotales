@@ -3,7 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package cadpi;
+package com.proyecto.bibliotales.data.models;
+import java.net.URL;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,6 +15,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import javafx.animation.KeyValue;
 import javafx.animation.KeyValue.Type;
+import static javafx.css.StyleOrigin.USER;
 import static jdk.nashorn.internal.objects.NativeFunction.call;
 import pojospi.ExcepcionPI;
 import pojospi.Compra_Item;
@@ -34,32 +36,123 @@ import pojospi.Usuario;
 public class CADPI {
 
     private Connection conexion;
+    // DATOS DE CONEXIÓN
+    // =================
+    // Se obtienen de la clase ServerConfig para facilitar cambios (Casa vs Clase).
+    private static final String IP = ServerConfig.getDbIp();
+    private static final String PORT = ServerConfig.DB_PORT;
+    private static final String SID = ServerConfig.DB_STD;
+    private static final String USER = ServerConfig.DB_USER;
+    private static final String PASSWORD = ServerConfig.DB_PASS;
+    
+    
+ 
+    // Cadena de Conexión (JDBC URL): "jdbc:oracle:thin:@IP:PUERTO:SID"
+    private static final String URL = "jdbc:oracle:thin:@" + IP + ":" + PORT + ":" + SID;
     
     public CADPI() throws ExcepcionPI {
         try {
-        Class.forName("oracle.jdbc.driver.OracleDriver");
-        } catch (ClassNotFoundException ex) {          
-            ExcepcionPI e = new ExcepcionPI();
-            e.setMensajeErrorBD(ex.getMessage());  
-            System.out.println("Error general del sistema, consulte con el administrador");  
-            throw e;
+            // 1. CARGAR EL DRIVER
+            // ===================
+            // Esto "enseña" a Java cómo hablar con Oracle.
+            // Si falla aquí, es que falta el .jar de ojdbc en el proyecto (pom.xml).
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+        } catch (ClassNotFoundException ex) {
+            System.out.println("ERROR CRÍTICO: No se encuentra el Driver de Oracle.");
+            System.out.println("Asegúrate de haber ejecutado 'mvn install' y que el pom.xml esté bien.");
         }
     }
-    
-    private void conectarBD() throws ExcepcionPI {
-        try {
-        conexion = DriverManager.getConnection("jdbc:oracle:thin:@192.168.1.141:1521:test", "bibliotales", "kk");
-        }   catch (SQLException ex) {
-            ExcepcionPI e = new ExcepcionPI();
-             e.setCodigoErrorBD(ex.getErrorCode());
-             e.setMensajeErrorBD(ex.getMessage());
-             e.setMensajeErrorUsuario("Error general del sistema, consulte con el administrador");
-           throw e; 
+ 
+    // 2. ABRIR CONEXIÓN
+    // =================
+    // Este método privado nos da un objeto 'Connection' listo para usar.
+    private Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
+    }
+ 
+    // TEST DE CONEXIÓN
+    public boolean testConnection() {
+        try (Connection conn = getConnection()) {
+            // isValid(2) intenta hacer un ping a la BD con timeout de 2 segundos.
+            return conn.isValid(2);
+        } catch (SQLException e) {
+            System.out.println("FALLO Conexión BD: " + e.getMessage());
+            return false;
         }
     }
+ 
+    // ========================================================================
+    // MÉTODOS CRUD (Create, Read, Update, Delete)
+    // ========================================================================
+ 
     
     
  // =========================================================SCRIPTS DE OSCAR============================================================================================
+    
+    
+     /**
+     * Lee un registro de la tabla Libro
+     * @return Registro leído
+     * @throws pojospi.ExcepcionPI Se lanzará cuando se produzca un error de base de datos
+     * @author Óscar Eduardo Arango Torres
+     * @version 1.0
+     * @since AaD 1.0
+    */
+    public Libro leerLibro(int idLibro) throws ExcepcionPI {
+    Libro l = null;
+
+    String dql = "SELECT l.*, u.*, t.* " +
+                 "FROM libro l, usuario u, tipo_libro t " +
+                 "WHERE l.id_usuario = u.id_usuario " +
+                 "AND l.id_tipo = t.id_tipo " +
+                 "AND l.id_libro = " + idLibro;
+    try (Connection conexion = getConnection()) {
+        Statement sentencia = conexion.createStatement();
+        ResultSet rs = sentencia.executeQuery(dql);
+        if (rs.next()) {
+            l = new Libro();
+            l.setId_libro(rs.getInt("ID_LIBRO"));
+            l.setTitulo(rs.getString("TITULO"));
+            l.setDescripcion(rs.getString("DESCRIPCION"));
+            l.setFechaPublicacion(rs.getDate("FECHA_PUBLICACION"));
+            l.setUrlArchivo(rs.getString("URL_ARCHIVO"));
+            l.setCostoDinero(rs.getBigDecimal("COSTO_DINERO")); 
+            l.setPortada(rs.getString("PORTADA"));
+
+          
+            Usuario u = new Usuario();
+            u.setId_usuario(rs.getInt("ID_USUARIO"));
+            u.setNombre_usuario(rs.getString("NOMBRE_USUARIO"));
+            u.setCorreo(rs.getString("CORREO"));
+            u.setContrasena(rs.getString("CONTRASENA"));
+            u.setTipoUsuario(rs.getString("TIPO_USUARIO"));
+            u.setPuntos(rs.getInt("PUNTOS"));
+            u.setFechaRegistro(rs.getDate("FECHA_REGISTRO"));
+            u.setFechaNacimiento(rs.getDate("FECHA_NACIMIENTO"));
+            l.setUsuario(u);
+
+            
+            TipoLibro tl = new TipoLibro();
+            tl.setIdTipo(rs.getInt("ID_TIPO"));
+            tl.setNombreTipo(rs.getString("NOMBRE_TIPO"));
+            l.setTipoLibro(tl);
+        }
+        rs.close();
+        sentencia.close();
+        conexion.close();
+
+    } catch (SQLException ex) {
+        ExcepcionPI e = new ExcepcionPI();
+        e.setCodigoErrorBD(ex.getErrorCode());
+        e.setMensajeErrorBD(ex.getMessage());
+        e.setSentenciaSQL(dql);
+        e.setMensajeErrorUsuario("Error al intentar leer el libro con ID: " + idLibro);
+        throw e;
+    }
+    return l;
+}
+    
+    
     
     
     /**
@@ -71,7 +164,7 @@ public class CADPI {
      * @since AaD 1.0
     */
     public ArrayList<Libro> leerLibros() throws ExcepcionPI {
-        conectarBD();
+      
         ArrayList listaLibros = new ArrayList();
         Libro l;
         Usuario u;
@@ -79,7 +172,8 @@ public class CADPI {
              System.out.println("Ejecutando");
         String dql = "select * from tipo_libro T, libro L, usuario U"
                 + " where T.id_tipo=L.id_tipo and L.id_usuario=U.id_usuario";
-        try {
+        
+        try (Connection conexion = getConnection()) {
         Statement sentencia = conexion.createStatement();
         ResultSet resultado = sentencia.executeQuery(dql);
         while (resultado.next()) {
@@ -141,10 +235,9 @@ public class CADPI {
      * @since AaD 1.0
      */
     public int eliminarLibro(String id_libro) throws ExcepcionPI {
-        conectarBD();
         int registrosAfectados = 0;
         String dml = "DELETE libro WHERE id_libro = "+ id_libro;
-        try {
+        try (Connection conexion = getConnection()) {
         Statement sentencia = conexion.createStatement();
         registrosAfectados = sentencia.executeUpdate(dml);
         sentencia.close();
@@ -181,12 +274,11 @@ public class CADPI {
     * @since AaD 1.0
     */
 public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI {
-    conectarBD();
     int registrosAfectados = 0;
 
     String sql = "call actualizar_libro(?, ?, ?, ?, ?, ?, ?, ?)"; 
 
-    try {
+    try (Connection conexion = getConnection()) {
         CallableStatement sentencia = conexion.prepareCall(sql);
 
         
@@ -246,11 +338,10 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
      * @since AaD 1.0
      */
     public Integer insertarLibro(Libro libro) throws ExcepcionPI {
-    conectarBD();
     int registrosAfectados = 0;
     String dml = "INSERT INTO libro (id_libro, titulo, descripcion, fecha_publicacion, url_archivo, id_usuario, id_tipo, costo_dinero, portada) "
                + "VALUES (LIBRO_SEQ.nextval, ?, ?, ?, ?, ?, ?, ?, ?)";
-    try {
+    try (Connection conexion = getConnection()) {
         PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
         sentenciaPreparada.setString(1, libro.getTitulo());
         sentenciaPreparada.setString(2, libro.getDescripcion());
@@ -334,14 +425,13 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
      * @since AaD 1.0
      */
    public Integer insertarUsuario(Usuario usuario) throws ExcepcionPI {
-   conectarBD();
    int registrosAfectados = 0;
 
    String dml = "INSERT INTO usuario " +
                  "(id_usuario, nombre_usuario, correo, contrasena, tipo_usuario, puntos, fecha_registro, fecha_nacimiento) " +
                  "VALUES (USUARIO_SEQ.nextval, ?, ?, ?, ?, ?, ?, ?)";
 
-   try {
+    try (Connection conexion = getConnection()) {
         PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
 
         sentenciaPreparada.setString(1, usuario.getNombre_usuario());
@@ -394,12 +484,11 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
      * @since AaD 1.0
      */
     public Integer modificarUsuario(Integer id_usuario, Usuario usuario) throws ExcepcionPI {
-    conectarBD();
     int registrosAfectados = 0;
 
     String sql = "call actualizar_usuario(?, ?, ?, ?, ?, ?) ";
 
-    try {
+    try (Connection conexion = getConnection()) {
 
         CallableStatement sentenciaPreparada = conexion.prepareCall(sql);
 
@@ -457,7 +546,6 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
     * @since AaD 1.0
     */
     public MensajeForo leerMensajeForo(int idMensaje) throws ExcepcionPI {
-    conectarBD();
     MensajeForo m = null;
 
     // Consulta con múltiples alias para evitar colisiones de nombres:
@@ -482,7 +570,7 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
                  "AND mp.id_usuario = up.id_usuario(+) " + 
                  "AND mf.id_mensaje = " + idMensaje;
 
-    try {
+    try (Connection conexion = getConnection()) {
         Statement sentencia = conexion.createStatement();
         ResultSet rs = sentencia.executeQuery(dql);
 
@@ -592,12 +680,11 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
     * @since AaD 1.0
     */
     public Integer eliminarMensajeForo(Integer idMensaje) throws ExcepcionPI {
-    conectarBD();
     int registrosAfectados = 0;
 
     String dml = "DELETE FROM mensaje_foro WHERE id_mensaje = " + idMensaje;
 
-    try {
+     try (Connection conexion = getConnection()) {
         Statement sentencia = conexion.createStatement();
         registrosAfectados = sentencia.executeUpdate(dml);
 
@@ -660,12 +747,11 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
      * @since AaD 1.0
     */
     public ArrayList<Marketplace> leerItemsMarketplace() throws ExcepcionPI {
-    conectarBD();
     ArrayList<Marketplace> lista = new ArrayList<>();
     String dql = "SELECT m.*, u.* FROM marketplace m, usuario u "
                + "WHERE m.id_usuario = u.id_usuario";
 
-    try {
+    try (Connection conexion = getConnection()) {
         Statement sentencia = conexion.createStatement();
         ResultSet resultado = sentencia.executeQuery(dql);
 
@@ -723,14 +809,13 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
      * @since AaD 1.0
      */
     public int insertarItemMarketplace(Marketplace item) throws ExcepcionPI {
-    conectarBD();
     int registros = 0;
 
     String dml = "INSERT INTO marketplace "
                + "(id_item, nombre_item, descripcion, costo_puntos, tipo_item, id_usuario) "
                + "VALUES (MARKETPLACE_SEQ.nextval, ?, ?, ?, ?, ?)";
 
-    try {
+    try (Connection conexion = getConnection()) {
         PreparedStatement ps = conexion.prepareStatement(dml);
 
         ps.setString(1, item.getNombre_item());
@@ -787,12 +872,11 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
      * @since AaD 1.0
      */
     public Integer modificarItemMarketplace(Integer id_item, Marketplace item) throws ExcepcionPI {
-        conectarBD();
         int registrosAfectados = 0;
 
         String sql = "call actualizar_marketplace(?, ?, ?, ?, ?)";
 
-        try {
+        try (Connection conexion = getConnection()) {
             CallableStatement sentenciaPreparada = conexion.prepareCall(sql);
 
             sentenciaPreparada.setInt(1, id_item);
@@ -853,12 +937,11 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
      * @since AaD 1.0
     */
     public int eliminarItemMarketplace(int idItem) throws ExcepcionPI {
-    conectarBD();
     int registros = 0;
 
     String dml = "DELETE FROM marketplace WHERE id_item = " + idItem;
 
-    try {
+    try (Connection conexion = getConnection()) {
         Statement st = conexion.createStatement();
         registros = st.executeUpdate(dml);
 
@@ -921,12 +1004,11 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
      * @since AaD 1.0
     */ 
   public TipoLibro leerTipoLibro(int id_tipo) throws ExcepcionPI {
-    conectarBD();
     TipoLibro tipo = null;
     
     String dql = "SELECT tl.* FROM tipo_libro tl WHERE id_tipo = " + id_tipo;
     
-    try {
+    try (Connection conexion = getConnection()) {
         Statement sentencia = conexion.createStatement();
 
         
@@ -969,12 +1051,11 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
      * @since AaD 1.0
      */
   public int insertarTipoLibro(TipoLibro tipoLibro) throws ExcepcionPI {
-    conectarBD();
     int registrosAfectados = 0;
     
     String dml = "INSERT INTO tipo_libro (id_tipo, nombre_tipo) VALUES (TIPO_LIBRO_SEQ.nextval, ?)";
     
-    try {
+    try (Connection conexion = getConnection()) {
         PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
         sentenciaPreparada.setString(1, tipoLibro.getNombreTipo());
         
@@ -1022,12 +1103,11 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
      * @since AaD 1.0
     */
     public int eliminarTipoLibro(int idTipo) throws ExcepcionPI {
-    conectarBD();
     int registrosAfectados = 0;
     
     String dml = "DELETE FROM tipo_libro WHERE id_tipo = " + idTipo;
     
-    try {
+    try (Connection conexion = getConnection()) {
         Statement sentencia = conexion.createStatement();
         registrosAfectados = sentencia.executeUpdate(dml);
         
@@ -1069,12 +1149,11 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
      * @since AaD 1.0
      */
     public Integer modificarTipoLibro(Integer id_tipo, TipoLibro tipoLibro) throws ExcepcionPI {
-        conectarBD();
         int registrosAfectados = 0;
         
         String sql = "call actualizar_tipo_libro(?, ?)";
         
-        try {
+        try (Connection conexion = getConnection()) {
             CallableStatement sentencia = conexion.prepareCall(sql);
             
             sentencia.setInt(1, id_tipo);

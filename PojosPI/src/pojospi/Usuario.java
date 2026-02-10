@@ -5,13 +5,14 @@
  */
 package pojospi;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  *
  * @author DosherGG
  */
-public class Usuario {
+public class Usuario implements Serializable {
     private Integer id_usuario;     
     private String nombre_usuario;  
     private String correo;          

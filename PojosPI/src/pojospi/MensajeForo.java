@@ -5,13 +5,14 @@
  */
 package pojospi;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  *
  * @author DosherGG
  */
-public class MensajeForo {
+public class MensajeForo implements Serializable {
     private Integer id_mensaje;        
     private String contenido;          
     private LocalDateTime fecha_mensaje_foro; 
