@@ -24,10 +24,10 @@ public class ServerConfig {
                 return "192.168.1.141";
                 
             case CLASE:
-                return "172.16.202.1";
+                return "172.16.214.1";
                 
             default:
-                return "172.16.202.1";
+                return "172.16.214.1";
                
         }
     }

@@ -1138,7 +1138,7 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
   
     
     
-  /**
+    /**
      * Modifica un registro en la tabla TipoLibro 
      * @param id_tipo Identificador de TipoLibro del registro que se desea modificar
      * @param tipoLibro Objeto que condensa toda la información de un tipolibro.
@@ -1191,9 +1191,55 @@ public Integer modificarLibro(Integer id_libro, Libro libro) throws ExcepcionPI 
         return registrosAfectados;
     }
   
-  
-  
+    /**
+     * Lee un usuario registrado en la base de datos y con él inicia sesión para utilizar la app
+     * @param correo Usa el gmail como método de identificación
+     * @param contrasena Usa la contraseña suministrada como medida de seguridad de la cuenta
+     * @return Usuario leído 
+     * @throws ExcepcionPI Se produce al fallar la lectura del usuario
+     * @author Santiago Quiceno
+     */
+    public Usuario loginUsuario(String correo, String contrasena) throws ExcepcionPI {
+        Usuario u = null;
 
+        String sql =
+            "SELECT id_usuario, nombre_usuario, correo, contrasena, tipo_usuario, puntos, fecha_registro, fecha_nacimiento " +
+            "FROM usuario " +
+            "WHERE LOWER(correo) = LOWER(?) AND TRIM(contrasena) = ?";
+
+        try (Connection conexion = getConnection();
+             PreparedStatement ps = conexion.prepareStatement(sql)) {
+
+            ps.setString(1, correo);
+            ps.setString(2, contrasena);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    u = new Usuario();
+                    u.setId_usuario(rs.getInt("ID_USUARIO"));
+                    u.setNombre_usuario(rs.getString("NOMBRE_USUARIO"));
+                    u.setCorreo(rs.getString("CORREO"));
+                    u.setContrasena(rs.getString("CONTRASENA"));
+                    u.setTipoUsuario(rs.getString("TIPO_USUARIO"));
+                    u.setPuntos(rs.getInt("PUNTOS"));
+                    u.setFechaRegistro(rs.getDate("FECHA_REGISTRO"));
+                    u.setFechaNacimiento(rs.getDate("FECHA_NACIMIENTO"));
+                }
+            }
+
+        } catch (SQLException ex) {
+            ExcepcionPI e = new ExcepcionPI();
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(sql);
+            e.setMensajeErrorUsuario("Error al intentar iniciar sesión.");
+            throw e;
+        }
+
+        return u;
+    }
+  
+  
 }    
     
 

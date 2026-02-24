@@ -13,6 +13,7 @@ public class Peticion implements Serializable {
 
         // Usuarios
         CREATE_USUARIO,  // registro
+        LOGIN_USUARIO, // iniciar sesión
         // (más adelante: LOGIN, READ_USUARIO, etc.)
 
         // Infra

@@ -3,14 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/Servidor.java</file>
-            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/Peticion.java</file>
-            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/HiloCliente.java</file>
-            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/SimuladorCliente.java</file>
-            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/ServerConfig.java</file>
-            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/Respuesta.java</file>
-            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/CADPI.java</file>
-            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/prueba/Prueba.java</file>
+            <file>file:/C:/Users/santi/OneDrive/Escritorio/2ºDAM/PI%20Github/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/ServerConfig.java</file>
+            <file>file:/C:/Users/santi/OneDrive/Escritorio/2ºDAM/PI%20Github/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/Respuesta.java</file>
+            <file>file:/C:/Users/santi/OneDrive/Escritorio/2ºDAM/PI%20Github/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/HiloCliente.java</file>
+            <file>file:/C:/Users/santi/OneDrive/Escritorio/2ºDAM/PI%20Github/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/Servidor.java</file>
+            <file>file:/C:/Users/santi/OneDrive/Escritorio/2ºDAM/PI%20Github/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/Peticion.java</file>
         </group>
     </open-files>
 </project-private>

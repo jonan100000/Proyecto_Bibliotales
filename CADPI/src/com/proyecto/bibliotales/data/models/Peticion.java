@@ -9,10 +9,11 @@ public class Peticion implements Serializable {
 
     public enum TipoOperacion {
         // Libros
-        CREATE_LIBRO, READ_LIBRO, READALL_LIBRO, UPDATE_LIBRO, DELETE_LIBRO,
+        CREATE_LIBRO, READ_LIBRO, READALL_LIBRO, UPDATE_LIBRO, DELETE_LIBRO, 
 
         // Usuarios
         CREATE_USUARIO,  // registro
+        LOGIN_USUARIO, // iniciar sesión
         // (más adelante: LOGIN, READ_USUARIO, etc.)
 
         // Infra

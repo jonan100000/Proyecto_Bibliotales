@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import pojospi.Libro;
+import pojospi.Usuario;
 
 /**
  * HILO CLIENTE
@@ -115,6 +116,26 @@ public class HiloCliente extends Thread {
                     }
                     break;
 
+                case LOGIN_USUARIO:
+                    Usuario cred = peticion.getUsuario();
+
+                    if (cred == null || cred.getCorreo() == null || cred.getContrasena() == null) {
+                        respuesta.setExito(false);
+                        respuesta.setMensaje("Faltan credenciales (correo/contraseña).");
+                        break;
+                    }
+
+                    Usuario usuario = cad.loginUsuario(cred.getCorreo(), cred.getContrasena());
+
+                    if (usuario != null) {
+                        respuesta.setExito(true);
+                        respuesta.setMensaje("Login correcto");
+                        respuesta.setUsuario(usuario);
+                    } else {
+                        respuesta.setExito(false);
+                        respuesta.setMensaje("Correo o contraseña incorrectos");
+                    }
+                    break;    
                     
 //                case UPDATE:
 //                    // 3.6.3 

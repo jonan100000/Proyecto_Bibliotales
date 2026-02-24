@@ -133,8 +133,8 @@ class Registrarse : BaseActivity() {
             return false
         }
 
-        if (password.length < 1) {
-            Toast.makeText(this, "La contraseña debe tener al menos 1 caracteres", Toast.LENGTH_SHORT).show()
+        if (password.length != 1) {
+            Toast.makeText(this, "La contraseña debe ser de 1 caracter (BD: CHAR(1))", Toast.LENGTH_SHORT).show()
             return false
         }
 
