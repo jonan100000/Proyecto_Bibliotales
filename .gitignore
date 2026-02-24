@@ -24,3 +24,4 @@ Thumbs.db
 # Optional: JetBrains caches
 /.idea/caches/
 /.idea/libraries/
+*.zip
