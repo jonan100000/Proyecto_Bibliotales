@@ -76,7 +76,7 @@ public class SimuladorCliente {
 
                             // Construimos la petición de lectura
                             peticion = new Peticion();
-                            peticion.setTipoOperacion(Peticion.TipoOperacion.READ);
+                            peticion.setTipoOperacion(Peticion.TipoOperacion.READ_LIBRO);
                             peticion.setIdLibro(id);
 
                         } catch (Exception e) {

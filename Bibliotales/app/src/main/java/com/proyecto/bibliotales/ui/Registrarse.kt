@@ -7,10 +7,17 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import com.proyecto.bibliotales.R
-import com.proyecto.bibliotales.data.models.Usuario
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.proyecto.bibliotales.data.models.ClienteConfig
+import com.proyecto.bibliotales.data.models.ClienteSocket
+import com.proyecto.bibliotales.data.models.Peticion
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import pojospi.Usuario
 
 class Registrarse : BaseActivity() {
 
@@ -22,6 +29,7 @@ class Registrarse : BaseActivity() {
     }
 
     private fun setupUI() {
+        val usernameInput = findViewById<EditText>(R.id.usernameInput)
         val emailInput = findViewById<EditText>(R.id.emailInput)
         val passwordInput = findViewById<EditText>(R.id.passwordInput)
         val confirmPasswordInput = findViewById<EditText>(R.id.confirmPasswordInput)
@@ -30,35 +38,75 @@ class Registrarse : BaseActivity() {
         val backToLoginButton = findViewById<Button>(R.id.backToLoginButton)
 
         registerButton.setOnClickListener {
+            val username = usernameInput.text.toString().trim()
             val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString().trim()
             val confirmPassword = confirmPasswordInput.text.toString().trim()
             val birthDate = birthDateInput.text.toString().trim()
 
+            // Puedes reusar tu validarRegistro, pero ahora también valida username:
+            if (username.isEmpty()) {
+                Toast.makeText(this, "El nombre de usuario es obligatorio", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             if (validarRegistro(email, password, confirmPassword, birthDate)) {
 
-                val nombreUsuario = email
-                    .substringBefore("@")
-                    .replace(".", " ")
-                    .replaceFirstChar { it.uppercase() }
+                // Parse a Date para el POJO (tu servidor usa java.sql.Date(usuario.getFechaNacimiento().getTime()))
+                val fechaNacimiento = try {
+                    SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(birthDate)
+                } catch (e: Exception) {
+                    null
+                }
 
-                val usuario = Usuario(
-                    id_usuario = 2,               // ⚠ temporal
-                    nombre_usuario = nombreUsuario,
-                    correo = email,
-                    contraseña = password,
-                    tipo_usuario = "1",
-                    puntos = 100,
-                    fecha_registro = obtenerFechaActual(),
-                    fecha_nacimiento = birthDate
-                )
+                if (fechaNacimiento == null) {
+                    Toast.makeText(this, "Fecha inválida (YYYY-MM-DD)", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
 
-                sessionManager.saveUser(usuario)
+                // Construir pojospi.Usuario COMPLETO (obligatorio para tu INSERT)
+                val usuario = Usuario().apply {
+                    setNombre_usuario(username)
+                    setCorreo(email)
+                    setContrasena(password)     // OJO: en tu BD es CHAR(1) ahora mismo
+                    setTipoUsuario("R")         // CHECK: 'R' o 'A'
+                    setPuntos(0)                // CHECK: puntos>=0
+                    setFechaRegistro(Date())    // obligatorio
+                    setFechaNacimiento(fechaNacimiento)
+                }
 
-                Toast.makeText(this, "Usuario registrado correctamente", Toast.LENGTH_SHORT).show()
+                val peticion = Peticion(Peticion.TipoOperacion.CREATE_USUARIO, usuario)
 
-                startActivity(Intent(this, PerfilUsuario::class.java))
-                finish()
+                // Enviar al servidor (IO)
+                registerButton.isEnabled = false
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    val respuesta = try {
+                        val cliente = ClienteSocket(
+                            ClienteConfig.getServerIP(),
+                            ClienteConfig.PUERTO_SERVIDOR
+                        )
+                        cliente.enviarPeticion(peticion)
+                    } catch (e: Exception) {
+                        null
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        registerButton.isEnabled = true
+
+                        if (respuesta?.isExito == true) {
+                            Toast.makeText(this@Registrarse, respuesta.mensaje ?: "Usuario registrado correctamente", Toast.LENGTH_SHORT).show()
+                            startActivity(Intent(this@Registrarse, Login::class.java))
+                            finish()
+                        } else {
+                            Toast.makeText(
+                                this@Registrarse,
+                                "Error: ${respuesta?.mensaje ?: "No se pudo registrar (sin respuesta)"}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
             }
         }
 
@@ -85,8 +133,8 @@ class Registrarse : BaseActivity() {
             return false
         }
 
-        if (password.length < 6) {
-            Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
+        if (password.length < 1) {
+            Toast.makeText(this, "La contraseña debe tener al menos 1 caracteres", Toast.LENGTH_SHORT).show()
             return false
         }
 

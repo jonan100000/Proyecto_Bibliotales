@@ -3,13 +3,13 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/cadpi/cadpi/CADPI.java</file>
-            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/cadpi/cadpi/HiloCliente.java</file>
-            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/cadpi/cadpi/Peticion.java</file>
-            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/cadpi/cadpi/ServerConfig.java</file>
-            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/cadpi/cadpi/SimuladorCliente.java</file>
-            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/cadpi/cadpi/Servidor.java</file>
-            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/cadpi/cadpi/Respuesta.java</file>
+            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/Servidor.java</file>
+            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/Peticion.java</file>
+            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/HiloCliente.java</file>
+            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/SimuladorCliente.java</file>
+            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/ServerConfig.java</file>
+            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/Respuesta.java</file>
+            <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/com/proyecto/bibliotales/data/models/CADPI.java</file>
             <file>file:/C:/Users/DosherGG/Desktop/DAM2025/GitHub/Proyecto_Bibliotales/CADPI/src/prueba/Prueba.java</file>
         </group>
     </open-files>

@@ -43,6 +43,8 @@ android {
 }
 
 dependencies {
+
+
     // Para las librerías de Compose
     implementation(platform(libs.androidx.compose.bom))
 
@@ -72,6 +74,9 @@ dependencies {
 
     // Herramientas para previsualizar tus Composables en Android Studio
     implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(files("..\\libs\\PojosPI.jar"))
+    implementation(files("..\\libs\\PojosPI.jar"))
+    implementation(files("..\\libs\\PojosPI.jar"))
     implementation(files("..\\libs\\PojosPI.jar"))
     debugImplementation(libs.androidx.compose.ui.tooling)
 

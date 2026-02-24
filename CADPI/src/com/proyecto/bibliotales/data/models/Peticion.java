@@ -2,100 +2,58 @@ package com.proyecto.bibliotales.data.models;
 
 import java.io.Serializable;
 import pojospi.Libro;
+import pojospi.Usuario;
 
-/**
- * PETICION
- * ========
- * Es el sobre que envia el cliente. Representa la informacion que viaja desde la app de Android al servidor
- * IMPORTANTE: es serializable, es decir, se transforma en binario para viajar por la red.
- * 
- */
 public class Peticion implements Serializable {
-    
-    /*
-        1. IDENTIFICACION: creamos un identificador unico de version de serializable
-    */
-    private static final long SerialVersionUID = 1L;
-    
-    /*
-        2. CREAMOS EL ENUM DE TIPOOPERACION
-    */
+    private static final long serialVersionUID = 1L;
+
     public enum TipoOperacion {
-        CREATE,    // Crea
-        READ,      // Lee
-        READALL,   // Lee todos
-        UPDATE,    // Actualiza
-        DELETE,    // Borra
-        PING       // Comprueba la conexion
+        // Libros
+        CREATE_LIBRO, READ_LIBRO, READALL_LIBRO, UPDATE_LIBRO, DELETE_LIBRO,
+
+        // Usuarios
+        CREATE_USUARIO,  // registro
+        // (más adelante: LOGIN, READ_USUARIO, etc.)
+
+        // Infra
+        PING
     }
-    
-    /*
-        3. Que quiere hacer el cliente?
-    */
+
     private TipoOperacion tipoOperacion;
-    
-    /*
-        4. Con que datos? (Create/Update)
-    */
+
+    // Libro (ya lo tenías)
     private Libro libro;
-    
-    /*
-        5. Con que ID (Read/Delete)
-    */
     private int id_libro;
-    
-    /*
-        6. CONSTRUCTORES
-    */
-    // 6.1 Vacio
-    public Peticion() {
-        // ---
-    }
-    
-    // 6.2 Constructor para Read All
+
+    // Usuario (nuevo)
+    private Usuario usuario;
+    private int id_usuario;
+
+    public Peticion() {}
+
     public Peticion(TipoOperacion tipoOperacion) {
         this.tipoOperacion = tipoOperacion;
     }
-    
-    // 6.3 Constructor para Read/Delete
-    public Peticion(TipoOperacion tipoOperacion, int id_libro) {
+
+    // Registro
+    public Peticion(TipoOperacion tipoOperacion, Usuario usuario) {
         this.tipoOperacion = tipoOperacion;
-        this.id_libro = id_libro;
-    }
-    
-    // 6.4 Constructor para Create/Update
-    public Peticion(TipoOperacion tipoOperacion, int id_libro, Libro libro) {
-        this.tipoOperacion = tipoOperacion;
-        this.id_libro = id_libro;
-        this.libro = libro;
-    }
-    
-    /*
-        7. GETTERS Y SETTERS
-    */ 
-    public TipoOperacion getTipoOperacion() {
-        return tipoOperacion;
+        this.usuario = usuario;
     }
 
-    public void setTipoOperacion(TipoOperacion tipoOperacion) {
-        this.tipoOperacion = tipoOperacion;
-    }
+    // getters/setters
+    public TipoOperacion getTipoOperacion() { return tipoOperacion; }
+    public void setTipoOperacion(TipoOperacion tipoOperacion) { this.tipoOperacion = tipoOperacion; }
 
-    public Libro getLibro() {
-        return libro;
-    }
+    public Libro getLibro() { return libro; }
+    public void setLibro(Libro libro) { this.libro = libro; }
 
-    public void setEmpleado(Libro libro) {
-        this.libro = libro;
-    }
+    public int getIdLibro() { return id_libro; }
+    public void setIdLibro(int id_libro) { this.id_libro = id_libro; }
 
-    public int getIdLibro() {
-        return id_libro;
-    }
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 
-    public void setIdLibro(int id_libro) {
-        this.id_libro = id_libro;
-    }
-    
-    
+    public int getIdUsuario() { return id_usuario; }
+    public void setIdUsuario(int id_usuario) { this.id_usuario = id_usuario; }
 }

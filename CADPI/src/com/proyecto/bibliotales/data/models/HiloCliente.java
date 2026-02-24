@@ -65,7 +65,7 @@ public class HiloCliente extends Thread {
             
             // 3.6 Miramos qué quiere hacer el cliente (CREATE, READ, UPDATE, DELETE, REAL ALL)
             switch(peticion.getTipoOperacion()) {
-                case READ:
+                case READ_LIBRO:
                     // 3.6.1 leer -> busca por ID
                     Libro libro = cad.leerLibro(peticion.getIdLibro());
                     if(libro != null) {
@@ -80,8 +80,8 @@ public class HiloCliente extends Thread {
                     
                     break;
                     
-                case READALL:
-                    // 3.6.2 buscar todos los empleados -> Maximo 50 (se puede modificar en el EmpleadosCAD
+                case READALL_LIBRO:
+                    // 3.6.2 buscar todos los libros -> Maximo 50 (se puede modificar en el EmpleadosCAD
                     List<Libro> lista = cad.leerLibros();
                     
                     if(!lista.isEmpty()) {
@@ -93,6 +93,28 @@ public class HiloCliente extends Thread {
                         respuesta.setMensaje("La base de datos parece vacia.");
                     }
                     break;
+                    
+                case CREATE_USUARIO:
+                    try {
+                        pojospi.Usuario u = peticion.getUsuario();
+                        int afectados = cad.insertarUsuario(u); // devuelve 1 si inserta ok
+
+                        if (afectados > 0) {
+                            respuesta.setExito(true);
+                            respuesta.setMensaje("Usuario registrado correctamente.");
+                            // si quieres devolver el usuario (sin id, porque la secuencia lo genera):
+                            respuesta.setUsuario(u);
+                        } else {
+                            respuesta.setExito(false);
+                            respuesta.setMensaje("No se pudo registrar el usuario.");
+                        }
+                    } catch (pojospi.ExcepcionPI e) {
+                        respuesta.setExito(false);
+                        // usa el mensaje “amigable” si lo tienes:
+                        respuesta.setMensaje(e.getMensajeErrorUsuario() != null ? e.getMensajeErrorUsuario() : e.getMensajeErrorBD());
+                    }
+                    break;
+
                     
 //                case UPDATE:
 //                    // 3.6.3 
