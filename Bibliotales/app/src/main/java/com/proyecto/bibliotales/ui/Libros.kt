@@ -23,11 +23,17 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.activity.viewModels
+import com.proyecto.bibliotales.ui.viewmodels.ConexionViewModel
+
 
 class Libros : BaseActivity() {
 
+
     private var libroId: Int = -1
     private lateinit var libroActual: Libro
+
+    private val conexionViewModel: ConexionViewModel by viewModels()
 
     private var librosList: List<Libro> = emptyList()
     private var tiposList: List<TipoLibro> = emptyList()
@@ -69,7 +75,83 @@ class Libros : BaseActivity() {
             libroActual = libro
             setupUI(libroActual)
             configurarBotonAccion()
+
+            // 1) Observa el resultado del READ_LIBRO (BD)
+            observarLibroBD()
+
+            // 2) Lanza la petición al servidor para traer el libro real
+            conexionViewModel.leerLibro(libroId)
+
+
         }
+
+
+    }
+
+    private fun observarLibroBD() {
+        lifecycleScope.launch {
+            conexionViewModel.libroState.collect { st ->
+                if (!st.exito || st.libro == null) {
+                    // Si falla, nos quedamos con el JSON. No hacemos nada.
+                    return@collect
+                }
+
+                // st.libro es pojospi.Libro (BD)
+                aplicarLibroDesdeBD(st.libro)
+            }
+        }
+    }
+
+    private fun aplicarLibroDesdeBD(libroBD: pojospi.Libro) {
+        // 1) Portada: si BD trae nombre de imagen, úsala. Si no, deja la del JSON
+        val portadaBD = libroBD.portada
+        if (!portadaBD.isNullOrBlank()) {
+            // actualiza solo la portada sin romper tu sistema local de assets
+            val img = findViewById<ImageView>(R.id.portadaLibro)
+            val url = "https://byoiqofayvaxwiapbdiq.supabase.co/storage/v1/object/public/portadas/$portadaBD"
+            img.load(url) {
+                placeholder(R.drawable.portada_default)
+                error(R.drawable.portada_default)
+            }
+        }
+
+        // 2) Título y descripción: BD manda los "oficiales"
+        findViewById<TextView>(R.id.nombreOriginal).text = libroBD.titulo ?: libroActual.titulo
+        findViewById<TextView>(R.id.descripcionLibro).text = libroBD.descripcion ?: libroActual.descripcion
+
+        // 3) Tipo: BD trae objeto tipoLibro (evitas buscar en JSON si quieres)
+        val tipoNombre = libroBD.tipoLibro?.nombreTipo
+        if (!tipoNombre.isNullOrBlank()) {
+            findViewById<TextView>(R.id.tipoLibro).text = tipoNombre.uppercase()
+        }
+
+        // 4) Actualiza lo que afecta a “Ir a leer”: url_archivo
+        //    Tu botón usa libroActual.url_archivo, así que hay que actualizar libroActual
+        val fechaStr = libroBD.fechaPublicacion?.let {
+            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(it)
+        } ?: libroActual.fecha_publicacion
+
+        val costoDouble = libroBD.costoDinero?.toDouble() ?: libroActual.costo_dinero
+
+        val autorBD = libroBD.usuario?.nombre_usuario ?: libroActual.autor
+        val idUsuarioBD = libroBD.usuario?.id_usuario ?: libroActual.id_usuario
+        val idTipoBD = libroBD.tipoLibro?.idTipo ?: libroActual.id_tipo
+
+        // Re-creamos libroActual (tu modelo es data class inmutable)
+        libroActual = libroActual.copy(
+            titulo = libroBD.titulo ?: libroActual.titulo,
+            descripcion = libroBD.descripcion ?: libroActual.descripcion,
+            fecha_publicacion = fechaStr,
+            url_archivo = libroBD.urlArchivo ?: libroActual.url_archivo,
+            id_usuario = idUsuarioBD,
+            id_tipo = idTipoBD,
+            costo_dinero = costoDouble,
+            autor = autorBD,
+            portada = if (!portadaBD.isNullOrBlank()) portadaBD else libroActual.portada
+        )
+
+        // 5) Recalcula el botón porque depende de libroActual.url_archivo
+        configurarBotonAccion()
     }
 
     // ------------------ CARGA JSON ------------------
@@ -145,6 +227,8 @@ class Libros : BaseActivity() {
         configurarLibrosSimilares(libro)
     }
 
+
+
     // ------------------ LIBROS SIMILARES ------------------
 
     private fun configurarLibrosSimilares(libro: Libro) {
@@ -188,7 +272,8 @@ class Libros : BaseActivity() {
     // ------------------ PORTADA ------------------
 
     private fun cargarImagenPortada(libro: Libro, imageView: ImageView) {
-        imageView.load("file:///android_asset/portadas/${libro.portada}") {
+        val url = "https://byoiqofayvaxwiapbdiq.supabase.co/storage/v1/object/public/portadas/${libro.portada}"
+        imageView.load(url) {
             placeholder(R.drawable.portada_default)
             error(R.drawable.portada_default)
         }

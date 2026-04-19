@@ -7,14 +7,12 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import com.proyecto.bibliotales.R
+import com.proyecto.bibliotales.data.repository.UserRepository
 import com.proyecto.bibliotales.data.models.ClienteConfig
 import com.proyecto.bibliotales.data.models.ClienteSocket
 import com.proyecto.bibliotales.data.models.Peticion
-import com.proyecto.bibliotales.data.repository.UserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -71,15 +69,9 @@ class Login : BaseActivity() {
             return false
         }
 
-        if (password.length != 1) {
-            Toast.makeText(this, "La contraseña debe ser de 1 caracter (BD: CHAR(1))", Toast.LENGTH_SHORT).show()
-            return false
-        }
-
         return true
     }
 
-    // Mapeo de usuario de base de datos
     private fun mapUsuario(pi: UsuarioPI): UsuarioApp {
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
@@ -101,9 +93,7 @@ class Login : BaseActivity() {
     private fun intentarLogin(email: String, password: String) {
 
         /*
-        * ============ JSON =============
-        *
-        *  // 1️⃣ Buscar en JSON
+        *1️⃣ Buscar en JSON
         val usuarioJSON = userRepository.buscarUsuario(email, password)
         if (usuarioJSON != null) {
             sessionManager.saveUser(usuarioJSON)
@@ -124,12 +114,7 @@ class Login : BaseActivity() {
 
         Toast.makeText(this, "Email o contraseña incorrectos", Toast.LENGTH_SHORT).show()
         *
-        * */
-
-        /*
-        * =========== UsuarioLogin =============
         */
-
         val cred = UsuarioPI().apply {
             setCorreo(email)
             setContrasena(password) // debe ser 1 char

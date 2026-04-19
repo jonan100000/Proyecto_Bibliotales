@@ -8,6 +8,8 @@ import com.google.gson.reflect.TypeToken
 import com.proyecto.bibliotales.data.models.CompraItem
 import com.proyecto.bibliotales.data.models.CompraLibro
 import com.proyecto.bibliotales.data.models.Usuario
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class SessionManager(context: Context) {
 
@@ -29,6 +31,11 @@ class SessionManager(context: Context) {
     }
 
     fun saveUser(usuario: Usuario) {
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+        val fechaRegistroMs = runCatching { sdf.parse(usuario.fecha_registro)?.time ?: 0L }.getOrDefault(0L)
+        val fechaNacimientoMs = runCatching { sdf.parse(usuario.fecha_nacimiento)?.time ?: 0L }.getOrDefault(0L)
+
         editor.apply {
             putBoolean("logueado", true)
             putInt("id_usuario", usuario.id_usuario)
@@ -37,8 +44,15 @@ class SessionManager(context: Context) {
             putString("contraseña", usuario.contraseña)
             putString("tipo_usuario", usuario.tipo_usuario)
             putInt("puntos", usuario.puntos)
+
+            // si quieres, puedes seguir guardando el string (útil para UI)
             putString("fecha_registro", usuario.fecha_registro)
             putString("fecha_nacimiento", usuario.fecha_nacimiento)
+
+            // NUEVO: milis (útil para convertir a Date sin parsear después)
+            putLong("fecha_registro_ms", fechaRegistroMs)
+            putLong("fecha_nacimiento_ms", fechaNacimientoMs)
+
             apply()
         }
     }
@@ -55,7 +69,7 @@ class SessionManager(context: Context) {
                 nombre_usuario = prefs.getString("nombre_usuario", "") ?: "",
                 correo = prefs.getString("correo", "") ?: "",
                 contraseña = prefs.getString("contraseña", "") ?: "",
-                tipo_usuario = prefs.getString("tipo_usuario", "1") ?: "1",
+                tipo_usuario = prefs.getString("tipo_usuario", "R") ?: "R",
                 puntos = prefs.getInt("puntos", 0),
                 fecha_registro = prefs.getString("fecha_registro", "") ?: "",
                 fecha_nacimiento = prefs.getString("fecha_nacimiento", "") ?: ""
@@ -106,6 +120,9 @@ class SessionManager(context: Context) {
         editor.putString("compras_items_temporales", gson.toJson(comprasTemp))
         editor.apply()
     }
+
+    fun getFechaRegistroMs(): Long = prefs.getLong("fecha_registro_ms", 0L)
+    fun getFechaNacimientoMs(): Long = prefs.getLong("fecha_nacimiento_ms", 0L)
 
     fun getTemporalItemPurchases(): List<CompraItem> {
         val json = prefs.getString("compras_items_temporales", "[]")

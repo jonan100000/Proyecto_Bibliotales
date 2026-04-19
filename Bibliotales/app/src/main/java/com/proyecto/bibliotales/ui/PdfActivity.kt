@@ -1,13 +1,20 @@
 package com.proyecto.bibliotales.ui
 
+import android.net.Uri
 import android.os.Bundle
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.lifecycle.lifecycleScope
 import com.proyecto.bibliotales.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import java.net.HttpURLConnection
+import java.net.URL
 
 class PdfActivity : BaseActivity() {
 
@@ -18,67 +25,90 @@ class PdfActivity : BaseActivity() {
         setContentLayout(R.layout.activity_pdf)
 
         webView = findViewById(R.id.webViewPDF)
+        configurarWebView()
         cargarPDFenWebView()
         configurarNavegacionAtras()
     }
 
-    private fun cargarPDFenWebView() {
-        // Obtener el nombre del PDF del intent
-        val pdfName = intent.getStringExtra("PDF_NAME") ?: "Rebuild-World-volumen-1.1.pdf"
+    private fun configurarWebView() {
+        val settings = webView.settings
+        settings.javaScriptEnabled = true
+        settings.domStorageEnabled = true
+        settings.allowFileAccess = true
+        settings.allowFileAccessFromFileURLs = true
+        settings.allowUniversalAccessFromFileURLs = true
+        webView.webViewClient = WebViewClient()
+    }
 
-        // Mostrar mensaje para depuración
+    private fun cargarPDFenWebView() {
+        // Ahora PDF_NAME viene de la BD (url_archivo)
+        val pdfName = intent.getStringExtra("PDF_NAME") ?: run {
+            Toast.makeText(this, "Error: PDF_NAME vacío", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+
         Toast.makeText(this, "Cargando: $pdfName", Toast.LENGTH_SHORT).show()
 
-        // 1. Ruta completa en assets
-        val rutaAssets = "libros/$pdfName"
         val pdfFile = File(filesDir, pdfName)
 
-        try {
-            // Verificar si el archivo ya existe, si no copiarlo desde assets
-            if (!pdfFile.exists()) {
-                // Verificar si el archivo existe en assets
-                try {
-                    assets.open(rutaAssets).use { input ->
-                        FileOutputStream(pdfFile).use { output ->
-                            input.copyTo(output)
-                        }
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(this, "Error: PDF no encontrado", Toast.LENGTH_LONG).show()
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // 1) Si no existe en cache local, descargar desde Supabase
+                if (!pdfFile.exists()) {
+                    val encodedName = Uri.encode(pdfName)
+                    val pdfUrl =
+                        "https://byoiqofayvaxwiapbdiq.supabase.co/storage/v1/object/public/libros/$encodedName"
+
+                    descargarArchivo(pdfUrl, pdfFile)
+                }
+
+                // 2) Abrir con PDF.js en el hilo principal
+                withContext(Dispatchers.Main) {
+                    val viewerUrl =
+                        "file:///android_asset/pdfjs/web/viewer.html?file=${pdfFile.absolutePath}"
+                    webView.loadUrl(viewerUrl)
+                }
+
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@PdfActivity, "Error al cargar el PDF: ${e.message}", Toast.LENGTH_LONG).show()
                     finish()
-                    return
                 }
             }
-
-            // 2. Configuración MÍNIMA del WebView
-            val settings = webView.settings
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true
-            settings.allowFileAccess = true
-            settings.allowFileAccessFromFileURLs = true
-            settings.allowUniversalAccessFromFileURLs = true
-
-            // 3. WebViewClient simple
-            webView.webViewClient = WebViewClient()
-
-            // 4. Cargar PDF.js
-            val viewerUrl = "file:///android_asset/pdfjs/web/viewer.html?file=${pdfFile.absolutePath}"
-            webView.loadUrl(viewerUrl)
-
-        } catch (e: Exception) {
-            Toast.makeText(this, "Error al cargar el PDF: ${e.message}", Toast.LENGTH_LONG).show()
-            finish()
         }
+    }
+
+    private fun descargarArchivo(urlStr: String, destino: File) {
+        val conn = (URL(urlStr).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 15000
+            readTimeout = 30000
+            instanceFollowRedirects = true
+        }
+
+        // Si el servidor devuelve error (404, 403...), lo lanzamos
+        val code = conn.responseCode
+        if (code !in 200..299) {
+            conn.disconnect()
+            throw RuntimeException("HTTP $code al descargar PDF")
+        }
+
+        conn.inputStream.use { input ->
+            FileOutputStream(destino).use { output ->
+                input.copyTo(output)
+            }
+        }
+        conn.disconnect()
     }
 
     private fun configurarNavegacionAtras() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (webView.canGoBack()) {
-                    webView.goBack()  // Navegación dentro del PDF.js
+                    webView.goBack()
                 } else {
                     isEnabled = false
-                    finish()  // Cerrar activity
+                    finish()
                 }
             }
         })

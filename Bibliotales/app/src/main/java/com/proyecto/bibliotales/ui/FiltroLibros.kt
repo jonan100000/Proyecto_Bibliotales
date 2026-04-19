@@ -11,6 +11,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,9 +19,10 @@ import coil.load
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.proyecto.bibliotales.R
-import com.proyecto.bibliotales.data.models.Libro
 import com.proyecto.bibliotales.data.models.Genero
+import com.proyecto.bibliotales.data.models.Libro
 import com.proyecto.bibliotales.data.models.TipoLibro
+import com.proyecto.bibliotales.ui.viewmodels.ConexionViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,6 +43,12 @@ class FiltroLibros : BaseActivity() {
     private val generoMap = mutableMapOf<Int, String>()
     private val tipoMap = mutableMapOf<Int, String>()
 
+    // NUEVO: Mapa id_libro -> portada devuelta por BD (Oracle)
+    private val portadasBD: MutableMap<Int, String> = mutableMapOf()
+
+    // ViewModel para pedir READALL_LIBRO
+    private val conexionViewModel: ConexionViewModel by viewModels()
+
     // Filtro actual
     private var textoBusqueda: String = ""
 
@@ -52,7 +60,13 @@ class FiltroLibros : BaseActivity() {
         configurarRecyclerView()
         configurarListeners()
 
-        // Cargar datos
+        // NUEVO: escuchar la lista de libros desde BD para obtener portadas reales
+        observarPortadasDesdeBD()
+
+        // NUEVO: lanzar petición READALL_LIBRO (solo para portadas)
+        conexionViewModel.leerTodosLibros()
+
+        // Cargar datos JSON (resto de info + filtros)
         lifecycleScope.launch {
             cargarDatos()
         }
@@ -90,6 +104,27 @@ class FiltroLibros : BaseActivity() {
             textoBusqueda = ""
             botonLimpiarBusqueda.visibility = View.GONE
             mostrarTodosLosLibros()
+        }
+    }
+
+    // NUEVO: Observa READALL_LIBRO para construir mapa id->portada
+    private fun observarPortadasDesdeBD() {
+        lifecycleScope.launch {
+            conexionViewModel.librosState.collect { st ->
+                if (st.exito && st.libros.isNotEmpty()) {
+                    portadasBD.clear()
+                    st.libros.forEach { libroBD ->
+                        val id = libroBD.id_libro ?: return@forEach
+                        val portada = libroBD.portada
+                        if (!portada.isNullOrBlank()) {
+                            portadasBD[id] = portada
+                        }
+                    }
+
+                    // Refrescar recycler para que se vuelvan a pintar portadas
+                    recyclerView.adapter?.notifyDataSetChanged()
+                }
+            }
         }
     }
 
@@ -156,11 +191,9 @@ class FiltroLibros : BaseActivity() {
         val busquedaNormalizada = textoBusqueda.lowercase().trim()
 
         val librosFiltrados = librosList.filter { libro ->
-            // Obtener nombres de género y tipo para este libro
             val nombreGenero = generoMap[libro.id_genero] ?: ""
             val nombreTipo = tipoMap[libro.id_tipo] ?: ""
 
-            // Buscar en todos los campos
             libro.titulo.lowercase().contains(busquedaNormalizada) ||
                     libro.autor.lowercase().contains(busquedaNormalizada) ||
                     nombreGenero.lowercase().contains(busquedaNormalizada) ||
@@ -190,7 +223,6 @@ class FiltroLibros : BaseActivity() {
             (recyclerView.adapter as LibroAdapter).actualizarLibros(libros)
         }
 
-        // Actualizar contador de resultados
         textoResultados.text = if (textoBusqueda.isEmpty()) {
             "Todos los libros (${libros.size})"
         } else {
@@ -209,7 +241,8 @@ class FiltroLibros : BaseActivity() {
     }
 
     // Adapter para RecyclerView
-    inner class LibroAdapter(private var libros: List<Libro>) : RecyclerView.Adapter<LibroAdapter.LibroViewHolder>() {
+    inner class LibroAdapter(private var libros: List<Libro>) :
+        RecyclerView.Adapter<LibroAdapter.LibroViewHolder>() {
 
         inner class LibroViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val imageView: ImageView = itemView.findViewById(R.id.libroImageView)
@@ -239,18 +272,19 @@ class FiltroLibros : BaseActivity() {
         override fun onBindViewHolder(holder: LibroViewHolder, position: Int) {
             val libro = libros[position]
 
-            // Configurar datos
             holder.titleTextView.text = libro.titulo
             holder.autorTextView.text = "Autor: ${libro.autor}"
 
-            // Obtener nombre del género y tipo desde los mapas
             holder.generoTextView.text = generoMap[libro.id_genero] ?: "Desconocido"
             holder.tipoTextView.text = tipoMap[libro.id_tipo] ?: "Desconocido"
 
             holder.descripcionTextView.text = libro.descripcion
 
-            // Cargar imagen
-            holder.imageView.load("file:///android_asset/portadas/${libro.portada}") {
+            // NUEVO: portada real desde BD si existe, si no usar la del JSON
+            val portada = portadasBD[libro.id_libro] ?: libro.portada
+
+            val url = "https://byoiqofayvaxwiapbdiq.supabase.co/storage/v1/object/public/portadas/$portada"
+            holder.imageView.load(url) {
                 placeholder(R.drawable.portada_default)
                 error(R.drawable.portada_default)
                 crossfade(true)

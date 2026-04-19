@@ -13,8 +13,8 @@ public class Peticion implements Serializable {
 
         // Usuarios
         CREATE_USUARIO,  // registro
-        LOGIN_USUARIO, // iniciar sesión
-        // (más adelante: LOGIN, READ_USUARIO, etc.)
+        UPDATE_USUARIO,
+        LOGIN_USUARIO,
 
         // Infra
         PING
@@ -39,6 +39,13 @@ public class Peticion implements Serializable {
     // Registro
     public Peticion(TipoOperacion tipoOperacion, Usuario usuario) {
         this.tipoOperacion = tipoOperacion;
+        this.usuario = usuario;
+    }
+
+    // UPDATE_USUARIO (AÑADIDO)
+    public Peticion(TipoOperacion tipoOperacion, int id_usuario, Usuario usuario) {
+        this.tipoOperacion = tipoOperacion;
+        this.id_usuario = id_usuario;
         this.usuario = usuario;
     }
 
