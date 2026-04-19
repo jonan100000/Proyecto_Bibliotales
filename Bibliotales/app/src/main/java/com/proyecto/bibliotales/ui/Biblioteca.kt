@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,6 +19,7 @@ import com.google.gson.reflect.TypeToken
 import com.proyecto.bibliotales.R
 import com.proyecto.bibliotales.data.models.CompraLibro
 import com.proyecto.bibliotales.data.models.Libro
+import com.proyecto.bibliotales.ui.viewmodels.ConexionViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,34 +31,33 @@ class Biblioteca : BaseActivity() {
 
     private var librosList: List<Libro> = emptyList()
     private var comprasList: List<CompraLibro> = emptyList()
-    private val gson = Gson() // Añadir esta línea para tener la instancia de Gson
+    private val gson = Gson()
+
+    // NUEVO: ViewModel y mapa id_libro -> portada desde BD
+    private val conexionViewModel: ConexionViewModel by viewModels()
+    private val portadasBD: MutableMap<Int, String> = mutableMapOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Establecer el layout usando BaseActivity
         setContentLayout(R.layout.biblioteca)
 
-        // Inicializar RecyclerView
         bibliotecaRecyclerView = findViewById(R.id.bibliotecaRecyclerView)
         btnSubirLibro = findViewById(R.id.btnSubirLibro)
 
-        // Configurar LayoutManager horizontal
         val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         bibliotecaRecyclerView.layoutManager = layoutManager
 
-        // Configurar el botón para subir libro
         btnSubirLibro.setOnClickListener {
             val intent = Intent(this, SubirLibro::class.java)
             startActivity(intent)
         }
 
-        // Verificar si el usuario está logueado
-        if (!sessionManager.isLogged()) {
-            return
-        }
+        if (!sessionManager.isLogged()) return
 
-        // Cargar datos
+        // NUEVO: Observa portadas desde BD y pide READALL_LIBRO
+        observarPortadasDesdeBD()
+        conexionViewModel.leerTodosLibros()
+
         lifecycleScope.launch {
             val (libros, compras) = withContext(Dispatchers.IO) {
                 val librosCargados = cargarLibrosDesdeJSONSeguro()
@@ -70,6 +71,26 @@ class Biblioteca : BaseActivity() {
         }
     }
 
+    // NUEVO
+    private fun observarPortadasDesdeBD() {
+        lifecycleScope.launch {
+            conexionViewModel.librosState.collect { st ->
+                if (st.exito && st.libros.isNotEmpty()) {
+                    portadasBD.clear()
+                    st.libros.forEach { libroBD ->
+                        val id = libroBD.id_libro ?: return@forEach
+                        val portada = libroBD.portada
+                        if (!portada.isNullOrBlank()) {
+                            portadasBD[id] = portada
+                        }
+                    }
+                    // refresca el recycler para repintar portadas
+                    bibliotecaRecyclerView.adapter?.notifyDataSetChanged()
+                }
+            }
+        }
+    }
+
     private fun cargarLibrosDesdeJSONSeguro(): List<Libro> {
         val librosJSON = try {
             val jsonString = assets.open("data/libros.json").bufferedReader().use { it.readText() }
@@ -80,9 +101,7 @@ class Biblioteca : BaseActivity() {
             emptyList()
         }
 
-        // Agregar libros temporales
         val librosTemporales = cargarLibrosTemporales()
-
         return librosJSON + librosTemporales
     }
 
@@ -97,7 +116,6 @@ class Biblioteca : BaseActivity() {
         }
     }
 
-    // Función para cargar libros temporales desde SharedPreferences
     private fun cargarLibrosTemporales(): List<Libro> {
         return try {
             val prefs = getSharedPreferences("libros_temporales", Context.MODE_PRIVATE)
@@ -109,7 +127,6 @@ class Biblioteca : BaseActivity() {
         }
     }
 
-    // Función para cargar compras temporales desde SharedPreferences
     private fun cargarComprasTemporales(): List<CompraLibro> {
         return try {
             val prefs = getSharedPreferences("libros_temporales", Context.MODE_PRIVATE)
@@ -122,56 +139,39 @@ class Biblioteca : BaseActivity() {
     }
 
     private fun configurarBiblioteca() {
-        // Obtener el ID del usuario actual
         val idUsuarioActual = sessionManager.getUser()?.id_usuario ?: -1
+        if (idUsuarioActual == -1) return
 
-        if (idUsuarioActual == -1) {
-            return
-        }
-
-        // Obtener TODAS las compras del usuario (JSON + temporales de sesión + temporales de libros)
         val comprasJSON = comprasList.filter { it.id_usuario == idUsuarioActual }
         val comprasTemp = sessionManager.getTemporalPurchases().filter { it.id_usuario == idUsuarioActual }
         val comprasTemporalesLibros = cargarComprasTemporales().filter { it.id_usuario == idUsuarioActual }
 
         val todasCompras = comprasJSON + comprasTemp + comprasTemporalesLibros
+        if (todasCompras.isEmpty()) return
 
-        if (todasCompras.isEmpty()) {
-            // No hay libros comprados
-            return
-        }
-
-        // Obtener IDs de libros comprados
         val librosCompradosIds = todasCompras.map { it.id_libro }
-
-        // Filtrar libros que el usuario ha comprado (incluyendo temporales)
         val librosBiblioteca = librosList.filter { it.id_libro in librosCompradosIds }
+        if (librosBiblioteca.isEmpty()) return
 
-        if (librosBiblioteca.isEmpty()) {
-            return
-        }
-
-        // Crear mapa de fecha de compra por libro para ordenar
         val fechaCompraPorLibro = todasCompras.associate { it.id_libro to it.fecha_libro_compra }
 
-        // Ordenar libros por fecha de compra (más reciente primero) y luego por ID
         val librosOrdenados = librosBiblioteca.sortedWith(
             compareByDescending<Libro> { libro ->
                 fechaCompraPorLibro[libro.id_libro]
             }.thenByDescending { it.id_libro }
         )
 
-        // Configurar RecyclerView
-        val adapter = BibliotecaAdapter(librosOrdenados)
-        bibliotecaRecyclerView.adapter = adapter
+        bibliotecaRecyclerView.adapter = BibliotecaAdapter(librosOrdenados)
     }
 
+    // CAMBIADO: ahora usa portada de BD si existe y carga desde Supabase
     private fun cargarImagenPortada(libro: Libro, imageView: ImageView) {
-        // Para libros temporales, usar el campo "portada" o default
-        val nombrePortada = if (libro.portada.isNotEmpty()) libro.portada else "portada_default.jpg"
+        val portada = portadasBD[libro.id_libro]
+            ?: (if (libro.portada.isNotEmpty()) libro.portada else "portada_default.jpg")
 
-        // Intentar cargar desde assets
-        imageView.load("file:///android_asset/portadas/${nombrePortada}") {
+        val url = "https://byoiqofayvaxwiapbdiq.supabase.co/storage/v1/object/public/portadas/$portada"
+
+        imageView.load(url) {
             placeholder(R.drawable.portada_default)
             error(R.drawable.portada_default)
             size(300, 450)
@@ -185,16 +185,13 @@ class Biblioteca : BaseActivity() {
         startActivity(intent)
     }
 
-    // Recargar cuando vuelva a la actividad para mostrar compras nuevas
     override fun onResume() {
         super.onResume()
         if (sessionManager.isLogged()) {
             lifecycleScope.launch {
-                // Recargar compras del JSON
                 comprasList = withContext(Dispatchers.IO) {
                     cargarComprasDesdeJSONSeguro()
                 }
-                // Reconfigurar biblioteca con datos actualizados
                 configurarBiblioteca()
             }
         }
@@ -226,11 +223,7 @@ class Biblioteca : BaseActivity() {
 
         override fun onBindViewHolder(holder: BibliotecaViewHolder, position: Int) {
             val libro = libros[position]
-
-            // Configurar título
             holder.titleTextView.text = libro.titulo
-
-            // Cargar imagen de portada
             cargarImagenPortada(libro, holder.imageView)
         }
 

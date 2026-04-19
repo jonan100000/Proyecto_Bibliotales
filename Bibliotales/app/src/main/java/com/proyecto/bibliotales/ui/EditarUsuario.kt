@@ -16,6 +16,10 @@ import com.google.android.material.textfield.TextInputEditText
 import com.proyecto.bibliotales.R
 import com.proyecto.bibliotales.data.models.Usuario
 import com.proyecto.bibliotales.data.session.SessionManager
+import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import com.proyecto.bibliotales.ui.viewmodels.ConexionViewModel
 
 class EditarUsuario : AppCompatActivity() {
 
@@ -25,6 +29,8 @@ class EditarUsuario : AppCompatActivity() {
     }
 
     private lateinit var sessionManager: SessionManager
+
+    private val conexionViewModel: ConexionViewModel by viewModels()
     private lateinit var ivProfileImage: ImageView
     private lateinit var profileImageContainer: View
     private lateinit var mainContainer: View
@@ -475,13 +481,50 @@ class EditarUsuario : AppCompatActivity() {
 
             // Guardar cambios en SessionManager
             sessionManager.saveUser(usuarioActualizado)
+            // --- AÑADIDO: llamar al servidor (UPDATE_USUARIO) ---
+            val fechaRegMs = sessionManager.getFechaRegistroMs()
+            val fechaNacMs = sessionManager.getFechaNacimientoMs()
+
+            // La contraseña "real" que vamos a mandar (nueva si se escribió, si no la antigua)
+            val passParaEnviar = usuarioActualizado.contraseña
+
+            conexionViewModel.actualizarUsuario(
+                idUsuario = usuarioActualizado.id_usuario,
+                nombreUsuarioNuevo = usuarioActualizado.nombre_usuario,
+                passNueva = passParaEnviar,
+                confirmPass = passParaEnviar, // para que pase la validación del ViewModel
+                tipoUsuarioActual = usuarioActualizado.tipo_usuario, // 'R' o 'A'
+                puntosActuales = usuarioActualizado.puntos,
+                fechaRegistroMs = fechaRegMs,
+                fechaNacimientoMs = fechaNacMs
+            )
 
             // Guardar items equipados (ya se guardaron al aplicar)
             // Guardar imagen de perfil seleccionada
             sessionManager.saveProfileImage(usuarioActual.id_usuario, selectedProfileImageResource)
 
-            // Regresar al perfil
-            finish()
+
+        }
+
+        lifecycleScope.launch {
+            conexionViewModel.updateState.collect { st ->
+                // Si quieres, puedes desactivar el botón mientras carga
+                btnSave.isEnabled = !st.cargando
+
+                st.mensaje?.let { msg ->
+                    // Solo muestra toast cuando haya mensaje (para no spamear)
+                    android.widget.Toast.makeText(this@EditarUsuario, msg, android.widget.Toast.LENGTH_SHORT).show()
+                }
+
+                if (st.exito) {
+                    // Si el update fue bien, cerramos y volvemos al perfil
+                    finish()
+                }
+            }
         }
     }
+
+
+
+
 }
